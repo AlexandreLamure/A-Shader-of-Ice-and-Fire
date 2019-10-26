@@ -12,6 +12,7 @@
 #include "model.hh"
 #include "camera.hh"
 #include "screen.h"
+#include "light.hh"
 
 
 Camera camera;
@@ -86,7 +87,8 @@ void process_input(GLFWwindow *window, float delta_time)
 }
 
 
-void set_uniforms(Program& program, int window_w, int window_h, float total_time, float delta_time)
+void set_uniforms(Program& program, int window_w, int window_h, float total_time, float delta_time,
+                  std::vector<DirLight>& dir_lights, std::vector<PointLight>& point_lights)
 {
     // set uniforms
     program.set_float("total_time", total_time);
@@ -95,28 +97,11 @@ void set_uniforms(Program& program, int window_w, int window_h, float total_time
     // set random
     program.set_int("rand", std::rand() % 100);
 
-    // set lights FIXME: abstract in class or using uniform buffer object
-    // directional light
-    program.set_vec3("dir_lights[0].dir", -1.f, -1.f, -1.f);
-    program.set_vec3("dir_lights[0].ambient", 0.1f, 0.1f, 0.1f);
-    program.set_vec3("dir_lights[0].diffuse", 0.6f, 0.6f, 0.6f);
-    program.set_vec3("dir_lights[0].specular", 0.5f, 0.5f, 0.5f);
-    // point light 1
-    program.set_vec3("point_lights[0].pos", -12.0f, 2.f, 2.f);
-    program.set_vec3("point_lights[0].ambient", 0.1f, 0.1f, 0.1f);
-    program.set_vec3("point_lights[0].diffuse", 1.0f, 1.0f, 1.0f);
-    program.set_vec3("point_lights[0].specular", 1.0f, 1.0f, 1.0f);
-    program.set_float("point_lights[0].constant", 1.0f);
-    program.set_float("point_lights[0].linear", 0.09);
-    program.set_float("point_lights[0].quadratic", 0.032);
-    // point light 2
-    program.set_vec3("point_lights[1].pos", 5.0f, 0.0f, 2.0f);
-    program.set_vec3("point_lights[1].ambient", 0.1f, 0.1f, 0.1f);
-    program.set_vec3("point_lights[1].diffuse", 0.8f, 0.0f, 0.3f);
-    program.set_vec3("point_lights[1].specular", 1.0f, 1.0f, 1.0f);
-    program.set_float("point_lights[1].constant", 1.0f);
-    program.set_float("point_lights[1].linear", 0.09);
-    program.set_float("point_lights[1].quadratic", 0.032);
+    // set lights
+    for (int i = 0; i < dir_lights.size(); ++i)
+        dir_lights[i].set(program, i);
+    for (int i = 0; i < point_lights.size(); ++i)
+        point_lights[i].set(program, i);
 
     program.set_vec3("camera_pos", camera.pos);
     program.set_vec2("mouse_pos", camera.mouse_pos);
@@ -180,6 +165,23 @@ int main()
 
 
 
+    // Create Lights
+    std::vector<DirLight> dir_lights;
+    std::vector<PointLight> point_lights;
+    dir_lights.push_back(DirLight({0.1f, 0.1f, 0.1f}, // ambient
+                                  {0.6f, 0.6f, 0.6f}, // diffuse
+                                  {0.5f, 0.5f, 0.5f}, // specular
+                                  {-1.f, -1.f, -1.f})); // direction
+    point_lights.push_back(PointLight({0.1f, 0.1f, 0.1f}, // ambient
+                                      {1.0f, 1.0f, 1.0f}, // diffuse
+                                      {1.0f, 1.0f, 1.0f}, // specular
+                                      {-12.0f, 2.f, 2.f})); // position
+    point_lights.push_back(PointLight({0.8f, 0.0f, 0.3f}, // ambient
+                                      {1.0f, 1.0f, 1.0f}, // diffuse
+                                      {1.0f, 1.0f, 1.0f}, // specular
+                                      {5.0f, 0.0f, 2.0f})); // position
+
+
     // main loop
     while(!glfwWindowShouldClose(window))
     {
@@ -203,7 +205,7 @@ int main()
 
         glUseProgram(program.program_id);
         // Set classic uniforms
-        set_uniforms(program, window_w, window_h, total_time, delta_time);
+        set_uniforms(program, window_w, window_h, total_time, delta_time, dir_lights, point_lights);
 
 
         // SAMUS -------------------------------------------------------------------------------------------------------
@@ -239,7 +241,7 @@ int main()
         // SCREEN ------------------------------------------------------------------------------------------------------
         glUseProgram(program_screen.program_id);
         // Set classic uniforms
-        set_uniforms(program_screen, window_w, window_h, total_time, delta_time);
+        set_uniforms(program_screen, window_w, window_h, total_time, delta_time, dir_lights, point_lights);
         program_screen.set_int("screen_texture", 0);
         // Draw
         screen.draw();
@@ -257,6 +259,7 @@ int main()
     // clear all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
+
 
     return 0;
 }

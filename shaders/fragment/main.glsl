@@ -5,29 +5,30 @@ struct Material // Use vec3 instead of sampler2D to avoid expensive copy of data
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
     float shininess;
 };
 
 struct DirLight
 {
-    vec3 dir;
-
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    vec3 dir;
 };
 
 struct PointLight
 {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+
     vec3 pos;
 
     float constant;
     float linear;
     float quadratic;
-
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
 };
 
 #define NB_DIR_LIGHTS 1

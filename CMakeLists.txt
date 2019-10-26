@@ -12,7 +12,7 @@ add_executable(${BIN}
                src/model.cc src/model.hh
                src/camera.cc src/camera.hh
                src/screen.cc src/screen.h
-               src/main.cc)
+               src/main.cc src/light.cc src/light.hh)
 
 #OpenGL
 find_package(OpenGL REQUIRED)
