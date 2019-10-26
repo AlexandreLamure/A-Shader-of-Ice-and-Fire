@@ -1,7 +1,3 @@
-//
-// Created by alex-thinkpad on 11/07/19.
-//
-
 #ifndef OPENGL_GLITCH_SCREEN_H
 #define OPENGL_GLITCH_SCREEN_H
 

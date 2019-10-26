@@ -1,7 +1,3 @@
-//
-// Created by alexandre on 22/05/19.
-//
-
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

@@ -1,7 +1,3 @@
-//
-// Created by alexandre on 28/05/19.
-//
-
 #ifndef OPENGL_GLITCH_CAMERA_HH
 #define OPENGL_GLITCH_CAMERA_HH
 

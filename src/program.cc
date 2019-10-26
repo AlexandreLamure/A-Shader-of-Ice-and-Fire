@@ -1,7 +1,3 @@
-//
-// Created by alexandre on 24/05/19.
-//
-
 #include "program.hh"
 
 #include <exception>

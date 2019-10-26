@@ -1,7 +1,3 @@
-//
-// Created by alexandre on 22/05/19.
-//
-
 #ifndef OPENGL_GLITCH_MESH_HH
 #define OPENGL_GLITCH_MESH_HH
 

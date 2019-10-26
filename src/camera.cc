@@ -1,7 +1,3 @@
-//
-// Created by alexandre on 28/05/19.
-//
-
 #include "camera.hh"
 
 Camera::Camera()

@@ -1,7 +1,3 @@
-//
-// Created by alexandre on 24/05/19.
-//
-
 #include "model.hh"
 
 #define STB_IMAGE_IMPLEMENTATION

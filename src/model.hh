@@ -1,7 +1,3 @@
-//
-// Created by alexandre on 24/05/19.
-//
-
 #ifndef OPENGL_GLITCH_MODEL_HH
 #define OPENGL_GLITCH_MODEL_HH
 

@@ -1,7 +1,3 @@
-//
-// Created by alex-thinkpad on 11/07/19.
-//
-
 #include <glad/glad.h>
 #include <iostream>
 #include "screen.h"
