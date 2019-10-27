@@ -1,6 +1,9 @@
 #version 450
 
-in vec2 interpolated_tex_coords;
+in VS_OUT
+{
+    vec2 tex_coords;
+} fs_in;
 
 out vec4 output_color;
 
@@ -22,5 +25,5 @@ void main()
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
 
-    output_color *= texture(screen_texture, interpolated_tex_coords);
+    output_color *= texture(screen_texture, fs_in.tex_coords);
 }
