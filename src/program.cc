@@ -49,11 +49,18 @@ void Program::compile(GLuint shader, const char *shader_src, const char* shader_
     }
 }
 
-void Program::link(const std::vector<GLuint>& vertex_shaders, const std::vector<GLuint>& fragment_shaders)
+void Program::link(const std::vector<GLuint>& vertex_shaders, const std::vector<GLuint>& geometry_shaders,
+                   const std::vector<GLuint>& fragment_shaders)
 {
     for (auto vertex_shader : vertex_shaders)
     {
         glAttachShader(program_id, vertex_shader);
+        TEST_OPENGL_ERROR();
+
+    }
+    for (auto geometry_shader : geometry_shaders)
+    {
+        glAttachShader(program_id, geometry_shader);
         TEST_OPENGL_ERROR();
 
     }
@@ -79,6 +86,11 @@ void Program::link(const std::vector<GLuint>& vertex_shaders, const std::vector<
         glDetachShader(program_id, vertex_shader);
         glDeleteShader(vertex_shader);
     }
+    for (auto geometry_shader : geometry_shaders)
+    {
+        glDetachShader(program_id, geometry_shader);
+        glDeleteShader(geometry_shader);
+    }
     for (auto fragment_shader : fragment_shaders)
     {
         glDetachShader(program_id, fragment_shader);
@@ -86,22 +98,32 @@ void Program::link(const std::vector<GLuint>& vertex_shaders, const std::vector<
     }
 }
 
-Program::Program(const std::vector<const char*>& vertex_paths, const std::vector<const char*>& fragment_paths)
+Program::Program(const std::vector<const char*>& vertex_paths, const std::vector<const char*>& geometry_paths,
+                 const std::vector<const char*>& fragment_paths)
 {
     std::vector<const char*> vertex_srcs(vertex_paths.size());
+    std::vector<const char*> geometry_srcs(geometry_paths.size());
     std::vector<const char*> fragment_srcs(fragment_paths.size());
 
     for (int i = 0; i < vertex_paths.size(); ++i)
         vertex_srcs[i] = load(vertex_paths[i]);
+    for (int i = 0; i < geometry_paths.size(); ++i)
+        geometry_srcs[i] = load(geometry_paths[i]);
     for (int i = 0; i < fragment_paths.size(); ++i)
         fragment_srcs[i] = load(fragment_paths[i]);
 
     std::vector<GLuint> vertex_shaders(vertex_srcs.size());
+    std::vector<GLuint> geometry_shaders(geometry_srcs.size());
     std::vector<GLuint> fragment_shaders(fragment_srcs.size());
 
     for (int i = 0; i < vertex_srcs.size(); ++i)
     {
         vertex_shaders[i] = glCreateShader(GL_VERTEX_SHADER);
+        TEST_OPENGL_ERROR();
+    }
+    for (int i = 0; i < geometry_srcs.size(); ++i)
+    {
+        geometry_shaders[i] = glCreateShader(GL_GEOMETRY_SHADER);
         TEST_OPENGL_ERROR();
     }
     for (int i = 0; i < fragment_srcs.size(); ++i)
@@ -111,11 +133,13 @@ Program::Program(const std::vector<const char*>& vertex_paths, const std::vector
     }
     for (int i = 0; i < vertex_shaders.size(); ++i)
         compile(vertex_shaders[i], vertex_srcs[i], vertex_paths[i]);
+    for (int i = 0; i < geometry_shaders.size(); ++i)
+        compile(geometry_shaders[i], geometry_srcs[i], geometry_paths[i]);
     for (int i = 0; i < fragment_shaders.size(); ++i)
         compile(fragment_shaders[i], fragment_srcs[i], fragment_paths[i]);
     program_id = glCreateProgram(); TEST_OPENGL_ERROR();
 
-    link(vertex_shaders, fragment_shaders);
+    link(vertex_shaders, geometry_shaders, fragment_shaders);
 }
 
 void Program::set_bool(const std::string &name, bool value) const

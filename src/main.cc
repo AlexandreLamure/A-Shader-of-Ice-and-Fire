@@ -137,10 +137,11 @@ int main()
 
     // RENDER SHADERS PATHS --------------------------------------------------------------------------------------------
     std::vector<const char*> vertex_paths{"../shaders/vertex/main.glsl"};
+    std::vector<const char*> geometry_paths{"../shaders/geometry/main.glsl"};
     std::vector<const char*> frag_paths{"../shaders/other/tools.glsl",
                                         "../shaders/other/simplex.glsl",
                                         "../shaders/fragment/main.glsl"};
-    Program program(vertex_paths, frag_paths);
+    Program program(vertex_paths, geometry_paths, frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
 
@@ -149,8 +150,9 @@ int main()
 
     // SCREEN SHADERS PATHS --------------------------------------------------------------------------------------------
     std::vector<const char*> screen_vertex_paths{"../shaders/screen/vertex/main.glsl"};
+    std::vector<const char*> screen_geometry_paths{};
     std::vector<const char*> screen_frag_paths{"../shaders/screen/fragment/main.glsl"};
-    Program program_screen(screen_vertex_paths, screen_frag_paths);
+    Program program_screen(screen_vertex_paths, screen_geometry_paths, screen_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
 

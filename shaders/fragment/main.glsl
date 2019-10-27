@@ -31,19 +31,21 @@ struct PointLight
     float quadratic;
 };
 
-#define NB_DIR_LIGHTS 1
-#define NB_POINT_LIGHTS 2
 
 
-
-in vec4 interpolated_pos;
-in vec3 interpolated_normal;
-in vec4 interpolated_color;
-in vec2 interpolated_tex_coords;
-in mat3 TBN;
+in GS_OUT
+{
+    vec4 pos;
+    vec3 normal;
+    vec2 tex_coords;
+    mat3 TBN;
+} fs_in;
 
 out vec4 output_color;
 
+
+#define NB_DIR_LIGHTS 1
+#define NB_POINT_LIGHTS 2
 
 uniform DirLight dir_lights[NB_DIR_LIGHTS];
 uniform PointLight point_lights[NB_POINT_LIGHTS];
@@ -79,14 +81,14 @@ vec3 compute_dir_light(DirLight light, Material material, vec3 normal, vec3 came
 
 vec3 compute_point_light(PointLight light, Material material, vec3 normal, vec3 camera_dir)
 {
-    vec3 light_dir = normalize(light.pos - interpolated_pos.xyz);
+    vec3 light_dir = normalize(light.pos - fs_in.pos.xyz);
     // diffuse shading
     float diff = max(dot(normal, light_dir), 0.0);
     // specular shading
     vec3 reflect_dir = reflect(-light_dir, normal);
     float spec = pow(max(dot(camera_dir, reflect_dir), 0.0), material.shininess);
     // attenuation
-    float distance = length(light.pos - interpolated_pos.xyz);
+    float distance = length(light.pos - fs_in.pos.xyz);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
     // combine results
     vec3 ambient  = light.ambient  * material.ambient;
@@ -100,7 +102,7 @@ vec3 compute_point_light(PointLight light, Material material, vec3 normal, vec3 
 
 vec3 compute_lights(Material material, vec3 normal)
 {
-    vec3 camera_dir = normalize(camera_pos - interpolated_pos.xyz);
+    vec3 camera_dir = normalize(camera_pos - fs_in.pos.xyz);
     vec3 light_color = vec3(0);
 
     // Directional lighting
@@ -124,19 +126,19 @@ void main()
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
 
-    //vec3 normal = interpolated_normal; // if no normal map
-    vec3 normal = texture(texture_normal1, interpolated_tex_coords).rgb;
+    //vec3 normal = fs_in.normal; // if no normal map
+    vec3 normal = texture(texture_normal1, fs_in.tex_coords).rgb;
     normal = normalize(normal * 2.0 - 1.0);
-    normal = normalize(TBN * normal);
+    normal = normalize(fs_in.TBN * normal);
 
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
 
     Material material;
-    vec4 diffuse = texture(texture_diffuse1, interpolated_tex_coords);
-    material.ambient = vec3(texture(texture_ambient1, interpolated_tex_coords));
+    vec4 diffuse = texture(texture_diffuse1, fs_in.tex_coords);
+    material.ambient = vec3(texture(texture_ambient1, fs_in.tex_coords));
     material.diffuse = vec3(diffuse);
-    material.specular = vec3(texture(texture_specular1, interpolated_tex_coords));
+    material.specular = vec3(texture(texture_specular1, fs_in.tex_coords));
     material.shininess = 20; //FIXME: get value from assimp
 
     output_color *= vec4(compute_lights(material, normal), diffuse.a);

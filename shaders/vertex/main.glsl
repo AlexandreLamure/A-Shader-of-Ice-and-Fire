@@ -6,11 +6,13 @@ layout (location = 2) in vec2 tex_coords;
 layout (location = 3) in vec3 tangent;
 layout (location = 4) in vec3 bitangent;
 
-out vec4 interpolated_pos;
-out vec3 interpolated_normal;
-out vec4 interpolated_color;
-out vec2 interpolated_tex_coords;
-out mat3 TBN;
+out VS_OUT
+{
+    vec4 pos;
+    vec3 normal;
+    vec2 tex_coords;
+    mat3 TBN;
+} vs_out;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -22,9 +24,9 @@ uniform int rand;
 
 void main()
 {
-    interpolated_pos = model * vec4(position, 1);
-    interpolated_normal = mat3(transpose(inverse(model))) * normal; // we only keep the scale and rotations from model matrix
-    interpolated_tex_coords = tex_coords;
+    vs_out.pos = model * vec4(position, 1);
+    vs_out.normal = mat3(transpose(inverse(model))) * normal; // we only keep the scale and rotations from model matrix
+    vs_out.tex_coords = tex_coords;
 
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
@@ -33,8 +35,8 @@ void main()
     vec3 B = normalize(vec3(model * vec4(bitangent, 0.0)));
     vec3 N = normalize(vec3(model * vec4(normal, 0.0)));
     T = normalize(T - dot(T, N) * N);
-    TBN = mat3(T, B, N);
+    vs_out.TBN = mat3(T, B, N);
 
-    gl_Position = projection * view * interpolated_pos;
+    gl_Position = projection * view * vs_out.pos;
 
 }
