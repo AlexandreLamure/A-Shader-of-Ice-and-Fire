@@ -44,7 +44,7 @@ in GS_OUT
 out vec4 output_color;
 
 
-#define NB_DIR_LIGHTS 1
+#define NB_DIR_LIGHTS 2
 #define NB_POINT_LIGHTS 2
 
 uniform DirLight dir_lights[NB_DIR_LIGHTS];
@@ -126,11 +126,11 @@ void main()
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
 
-    //vec3 normal = fs_in.normal; // if no normal map
-    vec3 normal = texture(texture_normal1, fs_in.tex_coords).rgb;
+    vec3 normal = fs_in.normal; // if no normal map
+    /*vec3 normal = texture(texture_normal1, fs_in.tex_coords).rgb;
     normal = normalize(normal * 2.0 - 1.0);
     normal = normalize(fs_in.TBN * normal);
-
+*/
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
 

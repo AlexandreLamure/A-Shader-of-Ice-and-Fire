@@ -1,0 +1,11 @@
+# MagicaVoxel @ Ephtracy
+
+newmtl palette
+illum 1
+Ka 0.000 0.000 0.000
+Kd 1.000 1.000 1.000
+Ks 0.000 0.000 0.000
+map_Ka volcan_with_lava.png
+map_Kd volcan_with_lava.png
+map_Ks volcan_with_lava.png
+map_Bump volcan_with_lava_normal.png

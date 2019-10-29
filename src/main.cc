@@ -159,8 +159,9 @@ int main()
 
 
 
-    Model samus("../resources/varia-suit/DolBarriersuit.obj");
-    Model background("../resources/varia-suit/background.obj");
+    //Model samus("../models/varia-suit/DolBarriersuit.obj");
+    //Model background("../models/varia-suit/background.obj");
+    Model volcan_wl("../models/volcan_with_lava/volcan_with_lava.obj");
 
     Screen screen = Screen();
     GLuint frame_buffer = screen.gen_fbo(window_w, window_h);
@@ -171,9 +172,13 @@ int main()
     std::vector<DirLight> dir_lights;
     std::vector<PointLight> point_lights;
     dir_lights.push_back(DirLight({0.1f, 0.1f, 0.1f}, // ambient
-                                  {0.6f, 0.6f, 0.6f}, // diffuse
-                                  {0.5f, 0.5f, 0.5f}, // specular
+                                  {1.0f, 1.0f, 1.0f}, // diffuse
+                                  {1.0f, 1.0f, 1.0f}, // specular
                                   {-1.f, -1.f, -1.f})); // direction
+    dir_lights.push_back(DirLight({0.1f, 0.1f, 0.1f}, // ambient
+                                  {1.0f, 1.0f, 1.0f}, // diffuse
+                                  {1.0f, 1.0f, 1.0f}, // specular
+                                  {1.f, -1.f, -1.f})); // direction
     point_lights.push_back(PointLight({0.1f, 0.1f, 0.1f}, // ambient
                                       {1.0f, 1.0f, 1.0f}, // diffuse
                                       {1.0f, 1.0f, 1.0f}, // specular
@@ -210,6 +215,7 @@ int main()
         set_uniforms(program, window_w, window_h, total_time, delta_time, dir_lights, point_lights);
 
 
+        /*
         // SAMUS -------------------------------------------------------------------------------------------------------
         // set Model matrix
         glm::mat4 model_mat = glm::mat4(1.f);
@@ -230,6 +236,18 @@ int main()
         // Draw
         background.draw(program);
         // -------------------------------------------------------------------------------------------------------------
+        */
+
+
+        // VOLCAN WITH LAVA --------------------------------------------------------------------------------------------
+        // set Model matrix
+        glm::mat4 model_mat = glm::mat4(1.f);
+        model_mat = glm::translate(model_mat, glm::vec3(-0.3, -10.f, -3.f));
+        program.set_mat4("model", model_mat);
+        // Draw
+        volcan_wl.draw(program);
+        // -------------------------------------------------------------------------------------------------------------
+
 
 
 
