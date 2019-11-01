@@ -1,5 +1,4 @@
-#ifndef OPENGL_GLITCH_CAMERA_HH
-#define OPENGL_GLITCH_CAMERA_HH
+#pragma once
 
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
@@ -27,6 +26,3 @@ public:
 
     Camera();
 };
-
-
-#endif //OPENGL_GLITCH_CAMERA_HH

@@ -1,5 +1,4 @@
-#ifndef OPENGL_GLITCH_MESH_HH
-#define OPENGL_GLITCH_MESH_HH
+#pragma once
 
 #include <iostream>
 #include <glad/glad.h>
@@ -31,12 +30,10 @@ public:
 
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
     void draw(Program program);
+    void draw(Program program, GLuint tex_buffer);
 
 private:
     unsigned int VAO, VBO, EBO;
 
     void setupMesh();
 };
-
-
-#endif //OPENGL_GLITCH_MESH_HH

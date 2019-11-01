@@ -1,5 +1,5 @@
-#ifndef OPENGL_GLITCH_INIT_HH
-#define OPENGL_GLITCH_INIT_HH
+#pragma once
+
 
 namespace Init
 {
@@ -10,6 +10,3 @@ namespace Init
 
     GLFWwindow *init_all(int width, int height);
 }
-
-
-#endif //OPENGL_GLITCH_INIT_HH

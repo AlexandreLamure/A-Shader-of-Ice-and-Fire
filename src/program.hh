@@ -1,6 +1,4 @@
-#ifndef OPENGL_GLITCH_PROGRAM_HH
-#define OPENGL_GLITCH_PROGRAM_HH
-
+#pragma once
 
 #include <iostream>
 #include <glad/glad.h>
@@ -41,6 +39,3 @@ public:
     void set_mat3(const std::string &name, const glm::mat3 &mat) const;
     void set_mat4(const std::string &name, const glm::mat4 &mat) const;
 };
-
-
-#endif //OPENGL_GLITCH_PROGRAM_HH

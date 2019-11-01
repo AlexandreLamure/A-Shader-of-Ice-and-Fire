@@ -11,7 +11,7 @@
 #include "program.hh"
 #include "model.hh"
 #include "camera.hh"
-#include "screen.h"
+#include "fbo.hh"
 #include "light.hh"
 
 
@@ -135,7 +135,7 @@ int main()
 
 
 
-    // RENDER SHADERS PATHS --------------------------------------------------------------------------------------------
+    // RENDER PROGRAM --------------------------------------------------------------------------------------------------
     std::vector<const char*> vertex_paths{"../shaders/vertex/main.glsl"};
     std::vector<const char*> geometry_paths{"../shaders/geometry/main.glsl"};
     std::vector<const char*> frag_paths{"../shaders/other/tools.glsl",
@@ -148,7 +148,7 @@ int main()
 
 
 
-    // SCREEN SHADERS PATHS --------------------------------------------------------------------------------------------
+    // SCREEN PROGRAM --------------------------------------------------------------------------------------------------
     std::vector<const char*> screen_vertex_paths{"../shaders/screen/vertex/main.glsl"};
     std::vector<const char*> screen_geometry_paths{};
     std::vector<const char*> screen_frag_paths{"../shaders/screen/fragment/main.glsl"};
@@ -159,12 +159,13 @@ int main()
 
 
 
+    Model screen("../models/screen/screen.obj");
     //Model samus("../models/varia-suit/DolBarriersuit.obj");
     //Model background("../models/varia-suit/background.obj");
     Model volcan_wl("../models/volcan_with_lava/volcan_with_lava.obj");
 
-    Screen screen = Screen();
-    GLuint frame_buffer = screen.gen_fbo(window_w, window_h);
+
+    FBO screen_fbo = FBO(window_w, window_h);
 
 
 
@@ -204,7 +205,7 @@ int main()
         process_input(window, delta_time);
 
         // render
-        glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer); // draw scene to color texture
+        glBindFramebuffer(GL_FRAMEBUFFER, screen_fbo.fbo_id); // draw scene to color texture
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -215,7 +216,7 @@ int main()
         set_uniforms(program, window_w, window_h, total_time, delta_time, dir_lights, point_lights);
 
 
-        /*
+/*
         // SAMUS -------------------------------------------------------------------------------------------------------
         // set Model matrix
         glm::mat4 model_mat = glm::mat4(1.f);
@@ -227,7 +228,6 @@ int main()
         // -------------------------------------------------------------------------------------------------------------
 
 
-
         // BACKGROUND --------------------------------------------------------------------------------------------------
         // set Model matrix
         model_mat = glm::mat4(1.f);
@@ -236,7 +236,7 @@ int main()
         // Draw
         background.draw(program);
         // -------------------------------------------------------------------------------------------------------------
-        */
+*/
 
 
         // VOLCAN WITH LAVA --------------------------------------------------------------------------------------------
@@ -262,10 +262,10 @@ int main()
         glUseProgram(program_screen.program_id);
         // Set classic uniforms
         set_uniforms(program_screen, window_w, window_h, total_time, delta_time, dir_lights, point_lights);
-        program_screen.set_int("screen_texture", 0);
         // Draw
-        screen.draw();
+        screen.draw(program_screen, screen_fbo.tex_buffer);
         // -------------------------------------------------------------------------------------------------------------
+
 
 
 

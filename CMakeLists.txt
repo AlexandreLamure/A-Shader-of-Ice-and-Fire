@@ -11,7 +11,7 @@ add_executable(${BIN}
                src/program.cc src/program.hh
                src/model.cc src/model.hh
                src/camera.cc src/camera.hh
-               src/screen.cc src/screen.h
+               src/fbo.cc src/fbo.hh
                src/main.cc src/light.cc src/light.hh)
 
 #OpenGL

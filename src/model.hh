@@ -1,5 +1,4 @@
-#ifndef OPENGL_GLITCH_MODEL_HH
-#define OPENGL_GLITCH_MODEL_HH
+#pragma once
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -22,8 +21,6 @@ private:
 public:
     Model(std::string path);
 
-    void draw(Program shader);
+    void draw(Program program);
+    void draw(Program program, GLuint tex_buffer); // Draw from FBO
 };
-
-
-#endif //OPENGL_GLITCH_MODEL_HH

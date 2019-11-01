@@ -1,6 +1,4 @@
-#ifndef A_SHADER_OF_ICE_AND_FIRE_LIGHT_HH
-#define A_SHADER_OF_ICE_AND_FIRE_LIGHT_HH
-
+#pragma once
 
 #include <glm/glm.hpp>
 #include "program.hh"
@@ -37,6 +35,3 @@ public:
     PointLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, glm::vec3 pos);
     void set(Program program, int index);
 };
-
-
-#endif //A_SHADER_OF_ICE_AND_FIRE_LIGHT_HH

@@ -3,6 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../lib/stb/stb_image.h"
 
+
 Model::Model(std::string path)
 {
     // load model
@@ -180,5 +181,14 @@ void Model::draw(Program program)
     {
         program.set_int("mesh_id", i);
         meshes[i].draw(program);
+    }
+}
+
+void Model::draw(Program program, GLuint tex_buffer)
+{
+    for(unsigned int i = 0; i < meshes.size(); i++)
+    {
+        program.set_int("mesh_id", i);
+        meshes[i].draw(program, tex_buffer);
     }
 }
