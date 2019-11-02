@@ -53,12 +53,12 @@ uniform PointLight point_lights[NB_POINT_LIGHTS];
 
 
 uniform sampler2D texture_ambient1;
-uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_diffuse1; // DuDv Map
 uniform sampler2D texture_specular1;
 uniform sampler2D texture_normal1;
 
-uniform sampler2D texture_fbo0;
-uniform sampler2D texture_fbo1;
+uniform sampler2D texture_other0; // Reflection texture
+uniform sampler2D texture_other1; // Refraction texture
 
 
 uniform float total_time;
@@ -66,7 +66,7 @@ uniform vec2 resolution;
 uniform vec3 camera_pos;
 uniform int mesh_id;
 uniform int rand;
-
+uniform float wave_speed;
 
 
 vec3 compute_dir_light(DirLight light, Material material, vec3 normal, vec3 camera_dir)
@@ -141,14 +141,28 @@ void main()
 
     Material material;
 
+    // Compute Texture coordinates
     vec2 ndc = (fs_in.clip_space.xy / fs_in.clip_space.w) / 2.f + 0.5f;
     vec2 reflect_tex_coords = vec2(ndc.x, -ndc.y);
     vec2 refract_tex_coords = ndc;
 
-    vec4 reflect = texture(texture_fbo0, reflect_tex_coords);
-    vec4 refract = texture(texture_fbo1, refract_tex_coords);
+    // Add distortion
+    const float wave_strength = 0.02;
+    vec2 tex_coords1 = vec2(fs_in.tex_coords.x + wave_speed, fs_in.tex_coords.y);
+    vec2 tex_coords2 = vec2(-fs_in.tex_coords.x * wave_speed, fs_in.tex_coords.y + wave_speed);
+    vec2 distortion = (texture(texture_diffuse1, tex_coords1).rg * 2.f - 1.f) * wave_strength;
+    distortion += (texture(texture_diffuse1, tex_coords2).rg * 2.f - 1.f) * wave_strength;
+    reflect_tex_coords.x = clamp(reflect_tex_coords.x + distortion.x, 0.001f, 0.999f);
+    reflect_tex_coords.y = clamp(reflect_tex_coords.y + distortion.y, -0.001f, -0.999f);
+    refract_tex_coords = clamp(refract_tex_coords + distortion, 0.001f, 0.999f);
 
+    // Get texture color
+    vec4 reflect = texture(texture_other0, reflect_tex_coords);
+    vec4 refract = texture(texture_other1, refract_tex_coords);
+    // Combine reflect & refract
     vec4 diffuse = mix(reflect, refract, 0.5);
+
+
     material.ambient = vec3(diffuse);
     material.diffuse = vec3(diffuse);
     material.specular = vec3(diffuse);

@@ -175,20 +175,12 @@ unsigned int Model::texture_from_file(const char *path, const std::string &direc
     return texture_id;
 }
 
-void Model::draw(Program program)
-{
-    for(unsigned int i = 0; i < meshes.size(); i++)
-    {
-        program.set_int("mesh_id", i);
-        meshes[i].draw(program);
-    }
-}
 
-void Model::draw(Program program, std::vector<GLuint>& fbo_textures)
+void Model::draw(Program program, std::vector<GLuint>* other_textures)
 {
     for(unsigned int i = 0; i < meshes.size(); i++)
     {
         program.set_int("mesh_id", i);
-        meshes[i].draw(program, fbo_textures);
+        meshes[i].draw(program, other_textures);
     }
 }

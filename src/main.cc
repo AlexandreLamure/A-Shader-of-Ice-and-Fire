@@ -206,7 +206,7 @@ int main()
 
 
     // To avoid redeclaration
-    std::vector<GLuint> fbo_textures;
+    std::vector<GLuint> other_textures;
     // Set Model Matrix
     glm::mat4 model_mat = glm::mat4(1.f);
     //model_mat = glm::translate(model_mat, glm::vec3(10.f, -25.f, -30.f));
@@ -234,6 +234,7 @@ int main()
         // REFLECTION --------------------------------------------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, reflect_fbo.fbo_id);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(volcano_program.program_id);
@@ -245,7 +246,7 @@ int main()
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, 1, 0, -water_h});
         volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wl.draw(volcano_program);
+        volcan_wl.draw(volcano_program, nullptr);
         // reset camera
         camera.pos.y += distance;
         camera.invert_pitch();
@@ -255,6 +256,7 @@ int main()
         // REFRACTION --------------------------------------------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, refract_fbo.fbo_id);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(volcano_program.program_id);
@@ -262,7 +264,7 @@ int main()
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, -1, 0, water_h});
         volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wl.draw(volcano_program);
+        volcan_wl.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
 
@@ -273,6 +275,7 @@ int main()
         // VOLCAN WITH LAVA --------------------------------------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, screen_fbo.fbo_id);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(volcano_program.program_id);
@@ -280,20 +283,25 @@ int main()
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
         volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wl.draw(volcano_program);
+        volcan_wl.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
 
         // WATER -------------------------------------------------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, screen_fbo.fbo_id);
         glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
         glUseProgram(water_program.program_id);
         // set uniforms
         set_uniforms(water_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
+        float slow_time = total_time * 0.008;
+        float wave_speed = (slow_time - static_cast<int>(slow_time));
+        wave_speed = std::max(wave_speed, 1.f - wave_speed) * 2.f;
+        water_program.set_float("wave_speed", wave_speed);
         water_program.set_mat4("model", model_mat);
         // Draw
-        fbo_textures = {reflect_fbo.tex_buffer, refract_fbo.tex_buffer};
-        water.draw(water_program, fbo_textures);
+        other_textures = {reflect_fbo.tex_buffer, refract_fbo.tex_buffer};
+        water.draw(water_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
 
 
@@ -304,14 +312,15 @@ int main()
         // SCREEN ------------------------------------------------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // bind back to default framebuffer
         glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(screen_program.program_id);
         // set uniforms
         set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
         // Draw
-        fbo_textures = {screen_fbo.tex_buffer};
-        screen.draw(screen_program, fbo_textures);
+        other_textures = {screen_fbo.tex_buffer};
+        screen.draw(screen_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
 
 

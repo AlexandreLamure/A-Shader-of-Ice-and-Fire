@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <iostream>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -29,8 +30,7 @@ public:
     std::vector<Texture> textures;
 
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
-    void draw(Program program);
-    void draw(Program program, std::vector<GLuint>& fbo_textures);
+    void draw(Program program, std::vector<GLuint>* other_textures);
 
 private:
     unsigned int VAO, VBO, EBO;

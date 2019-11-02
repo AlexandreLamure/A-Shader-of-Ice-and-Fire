@@ -41,7 +41,7 @@ void Mesh::setupMesh() {
     glBindVertexArray(0);
 }
 
-void Mesh::draw(Program program) {
+void Mesh::draw(Program program, std::vector<GLuint>* other_textures) {
     unsigned int diffuse_n = 1;
     unsigned int specular_n = 1;
     unsigned int normal_n = 1;
@@ -58,33 +58,26 @@ void Mesh::draw(Program program) {
         else if(name == "texture_normal")
             number = std::to_string(normal_n++);
         program.set_int(name + number, i);
-        std::cout << "Texture " << name + number << ": " << i << " has id " << textures[i].id << std::endl;
+        std::cout << "Texture " << name + number << ": " << i << " has id " << textures[i].id  << " and path " << textures[i].path << std::endl;
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
+
+    if (other_textures)
+    {
+        for (unsigned int i = 0; i < other_textures->size(); ++i)
+        {
+            unsigned int index = i + textures.size();
+            glActiveTexture(GL_TEXTURE0 + index);
+            glBindTexture(GL_TEXTURE_2D, (*other_textures)[i]);
+            program.set_int("texture_other" + std::to_string(i), index);
+            std::cout << "Texture_other " << i << ": " << index << std::endl;
+        }
+    }
+
     glActiveTexture(GL_TEXTURE0);
 
     // draw mesh
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-}
-
-
-void Mesh::draw(Program program, std::vector<GLuint>& fbo_textures)
-{
-    for (int i = 0; i < fbo_textures.size(); ++i)
-    {
-        glActiveTexture(GL_TEXTURE0 + i);
-        glBindTexture(GL_TEXTURE_2D, fbo_textures[i]);
-        program.set_int("texture_fbo" + std::to_string(i), i);
-    }
-
-    glBindVertexArray(VAO);
-    glDisable(GL_CULL_FACE);
-
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-
-    glBindVertexArray(0);
-    glEnable(GL_CULL_FACE);
-
 }

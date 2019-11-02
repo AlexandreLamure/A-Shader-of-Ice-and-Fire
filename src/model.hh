@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -20,7 +21,5 @@ private:
 
 public:
     Model(std::string path);
-
-    void draw(Program program);
-    void draw(Program program, std::vector<GLuint>& fbo_textures);
+    void draw(Program program, std::vector<GLuint>* other_textures);
 };
