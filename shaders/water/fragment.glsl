@@ -123,24 +123,8 @@ vec3 compute_lights(Material material, vec3 normal)
     return light_color;
 }
 
-
-void main()
+vec4 compute_water_texture()
 {
-    output_color = vec4(1);
-
-    /* ------------------------------------------------------- */
-    /* ------------------------------------------------------- */
-
-    vec3 normal = fs_in.normal; // if no normal map
-    /*vec3 normal = texture(texture_normal1, fs_in.tex_coords).rgb;
-    normal = normalize(normal * 2.0 - 1.0);
-    normal = normalize(fs_in.TBN * normal);
-*/
-    /* ------------------------------------------------------- */
-    /* ------------------------------------------------------- */
-
-    Material material;
-
     // Compute Texture coordinates
     vec2 ndc = (fs_in.clip_space.xy / fs_in.clip_space.w) / 2.f + 0.5f;
     vec2 reflect_tex_coords = vec2(ndc.x, -ndc.y);
@@ -159,9 +143,35 @@ void main()
     // Get texture color
     vec4 reflect = texture(texture_other0, reflect_tex_coords);
     vec4 refract = texture(texture_other1, refract_tex_coords);
-    // Combine reflect & refract
-    vec4 diffuse = mix(reflect, refract, 0.5);
 
+    // Fresnel
+    vec3 camera_dir = normalize(camera_pos - fs_in.pos.xyz);
+    float fresnel_coef = dot(camera_dir, vec3(0, 1, 0));
+    fresnel_coef = pow(fresnel_coef, 2);
+
+    // Combine reflect & refract
+    return mix(reflect, refract, fresnel_coef);
+}
+
+
+void main()
+{
+    output_color = vec4(1);
+
+    /* ------------------------------------------------------- */
+    /* ------------------------------------------------------- */
+
+    vec3 normal = fs_in.normal; // if no normal map
+    /*vec3 normal = texture(texture_normal1, fs_in.tex_coords).rgb;
+    normal = normalize(normal * 2.0 - 1.0);
+    normal = normalize(fs_in.TBN * normal);
+*/
+    /* ------------------------------------------------------- */
+    /* ------------------------------------------------------- */
+
+    Material material;
+
+    vec4 diffuse = compute_water_texture();
 
     material.ambient = vec3(diffuse);
     material.diffuse = vec3(diffuse);
@@ -169,4 +179,7 @@ void main()
     material.shininess = 20; //FIXME: get value from assimp
 
     output_color *= vec4(compute_lights(material, normal), diffuse.a);
+
+    // Add blue tint
+    output_color = mix(output_color, vec4(0.0, 0.3, 0.5, 1.0), 0.2);
 }
