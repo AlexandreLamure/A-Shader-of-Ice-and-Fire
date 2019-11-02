@@ -22,5 +22,5 @@ public:
     Model(std::string path);
 
     void draw(Program program);
-    void draw(Program program, GLuint tex_buffer); // Draw from FBO
+    void draw(Program program, std::vector<GLuint>& fbo_textures);
 };

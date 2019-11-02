@@ -8,7 +8,7 @@ in VS_OUT
 out vec4 output_color;
 
 
-uniform sampler2D screen_texture;
+uniform sampler2D fbo_texture0;
 
 uniform float total_time;
 uniform vec2 resolution;
@@ -25,5 +25,5 @@ void main()
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
 
-    output_color *= texture(screen_texture, fs_in.tex_coords);
+    output_color *= texture(fbo_texture0, fs_in.tex_coords);
 }

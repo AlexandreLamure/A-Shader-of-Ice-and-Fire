@@ -88,7 +88,8 @@ void process_input(GLFWwindow *window, float delta_time)
 
 
 void set_uniforms(Program& program, int window_w, int window_h, float total_time, float delta_time,
-                  std::vector<DirLight>& dir_lights, std::vector<PointLight>& point_lights)
+                  std::vector<DirLight>& dir_lights, std::vector<PointLight>& point_lights,
+                  glm::vec4 clip_plane)
 {
     // set uniforms
     program.set_float("total_time", total_time);
@@ -112,6 +113,9 @@ void set_uniforms(Program& program, int window_w, int window_h, float total_time
     float window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
     glm::mat4 projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
     program.set_mat4("projection", projection);
+
+    program.set_vec4("clip_plane", clip_plane);
+
 }
 
 
@@ -120,6 +124,13 @@ int main()
     // window variables
     int window_w = 1420;
     int window_h = 1080;
+
+    // water constants
+    constexpr int REFLECT_W = 1420;
+    constexpr int REFLECT_H = 1080;
+    constexpr int REFRACT_W = 1420;
+    constexpr int REFRACT_H = 1080;
+    constexpr float water_h = 7.0f; // FIXME: get this from obj
 
     // time variables
     float total_time = 0.f;
@@ -160,12 +171,13 @@ int main()
 
 
     Model screen("../models/screen/screen.obj");
-    //Model samus("../models/varia-suit/DolBarriersuit.obj");
-    //Model background("../models/varia-suit/background.obj");
+    Model water("../models/water/water.obj");
     Model volcan_wl("../models/volcan_with_lava/volcan_with_lava.obj");
 
 
     FBO screen_fbo = FBO(window_w, window_h);
+    FBO reflect_fbo = FBO(REFLECT_W, REFLECT_H);
+    FBO refract_fbo = FBO(REFRACT_W, REFRACT_H);
 
 
 
@@ -190,6 +202,14 @@ int main()
                                       {5.0f, 0.0f, 2.0f})); // position
 
 
+    // To avoid redeclaration
+    std::vector<GLuint> fbo_textures;
+    // Set Model Matrix
+    glm::mat4 model_mat = glm::mat4(1.f);
+    //model_mat = glm::translate(model_mat, glm::vec3(10.f, -25.f, -30.f));
+    //model_mat = glm::rotate(model_mat, glm::radians(40.f), glm::vec3(0.f, 1.f, 0.f));
+
+
     // main loop
     while(!glfwWindowShouldClose(window))
     {
@@ -204,45 +224,39 @@ int main()
         // input
         process_input(window, delta_time);
 
-        // render
-        glBindFramebuffer(GL_FRAMEBUFFER, screen_fbo.fbo_id); // draw scene to color texture
+
+
+
+
+        // REFLECTION --------------------------------------------------------------------------------------------------
+        glBindFramebuffer(GL_FRAMEBUFFER, reflect_fbo.fbo_id);
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
         glUseProgram(program.program_id);
-        // Set classic uniforms
-        set_uniforms(program, window_w, window_h, total_time, delta_time, dir_lights, point_lights);
-
-
-/*
-        // SAMUS -------------------------------------------------------------------------------------------------------
-        // set Model matrix
-        glm::mat4 model_mat = glm::mat4(1.f);
-        model_mat = glm::translate(model_mat, glm::vec3(-0.3, -10.f, -3.f));
-        model_mat = glm::rotate(model_mat, total_time * glm::radians(20.f), glm::vec3(0.f, 1.f, 0.f));
+        // set camera
+        float distance = 2 * (camera.pos.y - water_h);
+        camera.pos.y -= distance;
+        camera.invert_pitch();
+        // set uniforms
+        set_uniforms(program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, 1, 0, -water_h});
         program.set_mat4("model", model_mat);
         // Draw
-        samus.draw(program);
+        volcan_wl.draw(program);
+        // reset camera
+        camera.pos.y += distance;
+        camera.invert_pitch();
         // -------------------------------------------------------------------------------------------------------------
 
 
-        // BACKGROUND --------------------------------------------------------------------------------------------------
-        // set Model matrix
-        model_mat = glm::mat4(1.f);
-        model_mat = glm::translate(model_mat, glm::vec3(-0.3, -10.f, -3.f));
-        program.set_mat4("model", model_mat);
-        // Draw
-        background.draw(program);
-        // -------------------------------------------------------------------------------------------------------------
-*/
-
-
-        // VOLCAN WITH LAVA --------------------------------------------------------------------------------------------
-        // set Model matrix
-        glm::mat4 model_mat = glm::mat4(1.f);
-        model_mat = glm::translate(model_mat, glm::vec3(-0.3, -10.f, -3.f));
+        // REFRACTION --------------------------------------------------------------------------------------------------
+        glBindFramebuffer(GL_FRAMEBUFFER, refract_fbo.fbo_id);
+        glEnable(GL_DEPTH_TEST);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUseProgram(program.program_id);
+        // set uniforms
+        set_uniforms(program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, -1, 0, water_h});
         program.set_mat4("model", model_mat);
         // Draw
         volcan_wl.draw(program);
@@ -251,21 +265,70 @@ int main()
 
 
 
-        // draw a quad with the framebuffer color texture
+
+
+        // VOLCAN WITH LAVA --------------------------------------------------------------------------------------------
+        glBindFramebuffer(GL_FRAMEBUFFER, screen_fbo.fbo_id);
+        glEnable(GL_DEPTH_TEST);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUseProgram(program.program_id);
+        // set uniforms
+        set_uniforms(program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
+        program.set_mat4("model", model_mat);
+        // Draw
+        volcan_wl.draw(program);
+        // -------------------------------------------------------------------------------------------------------------
+
+
+        // WATER -------------------------------------------------------------------------------------------------------
+        // Draw
+        fbo_textures = {reflect_fbo.tex_buffer, refract_fbo.tex_buffer};
+        water.draw(program);
+        // -------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+        // SCREEN ------------------------------------------------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // bind back to default framebuffer
         glDisable(GL_DEPTH_TEST);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
-
-        // SCREEN ------------------------------------------------------------------------------------------------------
         glUseProgram(program_screen.program_id);
-        // Set classic uniforms
-        set_uniforms(program_screen, window_w, window_h, total_time, delta_time, dir_lights, point_lights);
+        // set uniforms
+        set_uniforms(program_screen, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
         // Draw
-        screen.draw(program_screen, screen_fbo.tex_buffer);
+        fbo_textures = {screen_fbo.tex_buffer};
+        screen.draw(program_screen, fbo_textures);
         // -------------------------------------------------------------------------------------------------------------
 
+
+
+
+        // TEST
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDisable(GL_DEPTH_TEST);
+        // -------------------------------------------------------------------------------------------------------------
+        glViewport(50, window_h - 50 - window_h / 4, window_w/4, window_h/4);
+        glUseProgram(program_screen.program_id);
+        // set uniforms
+        set_uniforms(program_screen, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
+        // Draw
+        fbo_textures = {reflect_fbo.tex_buffer};
+        screen.draw(program_screen, fbo_textures);
+        // -------------------------------------------------------------------------------------------------------------
+        glViewport(50, 50, window_w/4, window_h/4);
+        glUseProgram(program_screen.program_id);
+        // set uniforms
+        set_uniforms(program_screen, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
+        // Draw
+        fbo_textures = {refract_fbo.tex_buffer};
+        screen.draw(program_screen, fbo_textures);
+        // -------------------------------------------------------------------------------------------------------------
+        glViewport(0, 0, window_w, window_h);
 
 
 

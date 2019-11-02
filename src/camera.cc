@@ -16,3 +16,14 @@ Camera::Camera()
 
     first_mouse_move = true;
 }
+
+void Camera::invert_pitch()
+{
+    pitch = -pitch;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front = glm::normalize(front);
+    right = glm::normalize(glm::cross(front, glm::vec3(0.f, 1.f, 0.f)));
+    up    = glm::normalize(glm::cross(right, front));
+}

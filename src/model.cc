@@ -184,11 +184,11 @@ void Model::draw(Program program)
     }
 }
 
-void Model::draw(Program program, GLuint tex_buffer)
+void Model::draw(Program program, std::vector<GLuint>& fbo_textures)
 {
     for(unsigned int i = 0; i < meshes.size(); i++)
     {
         program.set_int("mesh_id", i);
-        meshes[i].draw(program, tex_buffer);
+        meshes[i].draw(program, fbo_textures);
     }
 }

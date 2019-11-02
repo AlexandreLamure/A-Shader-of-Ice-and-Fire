@@ -30,7 +30,7 @@ public:
 
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
     void draw(Program program);
-    void draw(Program program, GLuint tex_buffer);
+    void draw(Program program, std::vector<GLuint>& fbo_textures);
 
 private:
     unsigned int VAO, VBO, EBO;

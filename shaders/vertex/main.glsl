@@ -14,12 +14,16 @@ out VS_OUT
     mat3 TBN;
 } vs_out;
 
+
+
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform int mesh_id;
 uniform float total_time;
 uniform int rand;
+
+uniform vec4 clip_plane;
 
 
 void main()
@@ -37,6 +41,7 @@ void main()
     T = normalize(T - dot(T, N) * N);
     vs_out.TBN = mat3(T, B, N);
 
+    gl_ClipDistance[0] = dot(vs_out.pos, clip_plane); // FIXME: use model matrix to modify clip_plane
     gl_Position = projection * view * vs_out.pos;
 
 }

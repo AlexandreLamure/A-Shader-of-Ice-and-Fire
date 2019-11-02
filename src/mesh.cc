@@ -57,7 +57,7 @@ void Mesh::draw(Program program) {
             number = std::to_string(specular_n++);
         else if(name == "texture_normal")
             number = std::to_string(normal_n++);
-        program.set_int((name + number).c_str(), i);
+        program.set_int(name + number, i);
         std::cout << "Texture " << name + number << ": " << i << " has id " << textures[i].id << std::endl;
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
@@ -70,12 +70,14 @@ void Mesh::draw(Program program) {
 }
 
 
-void Mesh::draw(Program program, GLuint tex_buffer)
+void Mesh::draw(Program program, std::vector<GLuint>& fbo_textures)
 {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, tex_buffer);
-    program.set_int("screen_texture", 0);
-
+    for (int i = 0; i < fbo_textures.size(); ++i)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, fbo_textures[i]);
+        program.set_int("texture_fbo" + std::to_string(i), i);
+    }
 
     glBindVertexArray(VAO);
     glDisable(GL_CULL_FACE);

@@ -25,4 +25,5 @@ public:
     bool first_mouse_move; // to handle the big jump on the first mouse movement
 
     Camera();
+    void invert_pitch();
 };

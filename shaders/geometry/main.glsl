@@ -11,6 +11,8 @@ in VS_OUT
     mat3 TBN;
 } gs_in[];
 
+
+
 out GS_OUT
 {
     vec4 pos;
@@ -27,6 +29,7 @@ void set_out(int index)
     gs_out.tex_coords = gs_in[index].tex_coords;
     gs_out.TBN = gs_in[index].TBN;
     gl_Position = gl_in[index].gl_Position;
+    gl_ClipDistance[0] = gl_in[index].gl_ClipDistance[0];
 }
 
 void main()
