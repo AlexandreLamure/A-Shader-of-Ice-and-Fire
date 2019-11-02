@@ -115,7 +115,6 @@ void set_uniforms(Program& program, int window_w, int window_h, float total_time
     program.set_mat4("projection", projection);
 
     program.set_vec4("clip_plane", clip_plane);
-
 }
 
 
@@ -147,23 +146,27 @@ int main()
 
 
     // RENDER PROGRAM --------------------------------------------------------------------------------------------------
-    std::vector<const char*> vertex_paths{"../shaders/vertex/main.glsl"};
-    std::vector<const char*> geometry_paths{"../shaders/geometry/main.glsl"};
-    std::vector<const char*> frag_paths{"../shaders/other/tools.glsl",
-                                        "../shaders/other/simplex.glsl",
-                                        "../shaders/fragment/main.glsl"};
-    Program program(vertex_paths, geometry_paths, frag_paths);
+    std::vector<const char*> vertex_paths{"../shaders/volcano/vertex.glsl"};
+    std::vector<const char*> geometry_paths{"../shaders/volcano/geometry.glsl"};
+    std::vector<const char*> frag_paths{"../shaders/utils/simplex.glsl",
+                                        "../shaders/volcano/fragment.glsl"};
+    Program volcano_program(vertex_paths, geometry_paths, frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
 
-
+    // WATER PROGRAM ---------------------------------------------------------------------------------------------------
+    std::vector<const char*> water_vertex_paths{"../shaders/water/vertex.glsl"};
+    std::vector<const char*> water_geometry_paths{"../shaders/water/geometry.glsl"};
+    std::vector<const char*> water_frag_paths{"../shaders/water/fragment.glsl"};
+    Program water_program(water_vertex_paths, water_geometry_paths, water_frag_paths);
+    // -----------------------------------------------------------------------------------------------------------------
 
 
     // SCREEN PROGRAM --------------------------------------------------------------------------------------------------
-    std::vector<const char*> screen_vertex_paths{"../shaders/screen/vertex/main.glsl"};
+    std::vector<const char*> screen_vertex_paths{"../shaders/screen/vertex.glsl"};
     std::vector<const char*> screen_geometry_paths{};
-    std::vector<const char*> screen_frag_paths{"../shaders/screen/fragment/main.glsl"};
-    Program program_screen(screen_vertex_paths, screen_geometry_paths, screen_frag_paths);
+    std::vector<const char*> screen_frag_paths{"../shaders/screen/fragment.glsl"};
+    Program screen_program(screen_vertex_paths, screen_geometry_paths, screen_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
 
@@ -233,16 +236,16 @@ int main()
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(program.program_id);
+        glUseProgram(volcano_program.program_id);
         // set camera
         float distance = 2 * (camera.pos.y - water_h);
         camera.pos.y -= distance;
         camera.invert_pitch();
         // set uniforms
-        set_uniforms(program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, 1, 0, -water_h});
-        program.set_mat4("model", model_mat);
+        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, 1, 0, -water_h});
+        volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wl.draw(program);
+        volcan_wl.draw(volcano_program);
         // reset camera
         camera.pos.y += distance;
         camera.invert_pitch();
@@ -254,12 +257,12 @@ int main()
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(program.program_id);
+        glUseProgram(volcano_program.program_id);
         // set uniforms
-        set_uniforms(program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, -1, 0, water_h});
-        program.set_mat4("model", model_mat);
+        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, -1, 0, water_h});
+        volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wl.draw(program);
+        volcan_wl.draw(volcano_program);
         // -------------------------------------------------------------------------------------------------------------
 
 
@@ -272,19 +275,25 @@ int main()
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(program.program_id);
+        glUseProgram(volcano_program.program_id);
         // set uniforms
-        set_uniforms(program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
-        program.set_mat4("model", model_mat);
+        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
+        volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wl.draw(program);
+        volcan_wl.draw(volcano_program);
         // -------------------------------------------------------------------------------------------------------------
 
 
         // WATER -------------------------------------------------------------------------------------------------------
+        glBindFramebuffer(GL_FRAMEBUFFER, screen_fbo.fbo_id);
+        glEnable(GL_DEPTH_TEST);
+        glUseProgram(water_program.program_id);
+        // set uniforms
+        set_uniforms(water_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
+        water_program.set_mat4("model", model_mat);
         // Draw
         fbo_textures = {reflect_fbo.tex_buffer, refract_fbo.tex_buffer};
-        water.draw(program);
+        water.draw(water_program, fbo_textures);
         // -------------------------------------------------------------------------------------------------------------
 
 
@@ -297,38 +306,13 @@ int main()
         glDisable(GL_DEPTH_TEST);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(program_screen.program_id);
+        glUseProgram(screen_program.program_id);
         // set uniforms
-        set_uniforms(program_screen, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
+        set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
         // Draw
         fbo_textures = {screen_fbo.tex_buffer};
-        screen.draw(program_screen, fbo_textures);
+        screen.draw(screen_program, fbo_textures);
         // -------------------------------------------------------------------------------------------------------------
-
-
-
-
-        // TEST
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDisable(GL_DEPTH_TEST);
-        // -------------------------------------------------------------------------------------------------------------
-        glViewport(50, window_h - 50 - window_h / 4, window_w/4, window_h/4);
-        glUseProgram(program_screen.program_id);
-        // set uniforms
-        set_uniforms(program_screen, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
-        // Draw
-        fbo_textures = {reflect_fbo.tex_buffer};
-        screen.draw(program_screen, fbo_textures);
-        // -------------------------------------------------------------------------------------------------------------
-        glViewport(50, 50, window_w/4, window_h/4);
-        glUseProgram(program_screen.program_id);
-        // set uniforms
-        set_uniforms(program_screen, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
-        // Draw
-        fbo_textures = {refract_fbo.tex_buffer};
-        screen.draw(program_screen, fbo_textures);
-        // -------------------------------------------------------------------------------------------------------------
-        glViewport(0, 0, window_w, window_h);
 
 
 
