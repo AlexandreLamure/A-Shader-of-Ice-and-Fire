@@ -13,6 +13,7 @@
 #include "camera.hh"
 #include "fbo.hh"
 #include "light.hh"
+#include "cubemap.hh"
 
 
 Camera camera;
@@ -162,6 +163,14 @@ int main()
     // -----------------------------------------------------------------------------------------------------------------
 
 
+    // CUBEMAP PROGRAM -------------------------------------------------------------------------------------------------
+    std::vector<const char*> cubemap_vertex_paths{"../shaders/cubemap/vertex.glsl"};
+    std::vector<const char*> cubemap_geometry_paths{};
+    std::vector<const char*> cubemap_frag_paths{"../shaders/cubemap/fragment.glsl"};
+    Program cubemap_program(cubemap_vertex_paths, cubemap_geometry_paths, cubemap_frag_paths);
+    // -----------------------------------------------------------------------------------------------------------------
+
+
     // SCREEN PROGRAM --------------------------------------------------------------------------------------------------
     std::vector<const char*> screen_vertex_paths{"../shaders/screen/vertex.glsl"};
     std::vector<const char*> screen_geometry_paths{};
@@ -176,6 +185,8 @@ int main()
     Model screen("../models/screen/screen.obj");
     Model water("../models/water/water.obj");
     Model volcan_wl("../models/volcan_with_lava/volcan_with_lava.obj");
+
+    Cubemap cubemap = Cubemap();
 
 
     FBO screen_fbo = FBO(window_w, window_h);
@@ -233,32 +244,54 @@ int main()
 
         // REFLECTION --------------------------------------------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, reflect_fbo.fbo_id);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(volcano_program.program_id);
         // set camera
         float distance = 2 * (camera.pos.y - water_h);
         camera.pos.y -= distance;
         camera.invert_pitch();
+
+        // VOLCANO WITH LAVA -------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glUseProgram(volcano_program.program_id);
         // set uniforms
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, 1, 0, -water_h});
         volcano_program.set_mat4("model", model_mat);
         // Draw
         volcan_wl.draw(volcano_program, nullptr);
+        // -------------------------------------------------------------------------------------------------------------
+
+        // CUBEMAP -----------------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glUseProgram(cubemap_program.program_id);
+        // set uniforms
+        glm::mat4 view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+        view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
+        cubemap_program.set_mat4("view", view);
+        float window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+        glm::mat4 projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+        cubemap_program.set_mat4("projection", projection);
+        // Draw
+        cubemap.draw(cubemap_program);
+        // -------------------------------------------------------------------------------------------------------------
+
         // reset camera
         camera.pos.y += distance;
         camera.invert_pitch();
         // -------------------------------------------------------------------------------------------------------------
 
 
+
+
         // REFRACTION --------------------------------------------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, refract_fbo.fbo_id);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // VOLCANO WITH LAVA -------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
         // set uniforms
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, -1, 0, water_h});
@@ -271,13 +304,14 @@ int main()
 
 
 
-
-        // VOLCAN WITH LAVA --------------------------------------------------------------------------------------------
+        // DRAW TO SCREEN FBO ------------------------------------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, screen_fbo.fbo_id);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // VOLCANO WITH LAVA -------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
         // set uniforms
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
@@ -286,9 +320,7 @@ int main()
         volcan_wl.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-
         // WATER -------------------------------------------------------------------------------------------------------
-        glBindFramebuffer(GL_FRAMEBUFFER, screen_fbo.fbo_id);
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glUseProgram(water_program.program_id);
@@ -300,8 +332,23 @@ int main()
         water_program.set_float("wave_speed", wave_speed);
         water_program.set_mat4("model", model_mat);
         // Draw
-        other_textures = {reflect_fbo.tex_buffer, refract_fbo.tex_buffer};
+        other_textures = {reflect_fbo.tex_buffer, refract_fbo.tex_buffer, refract_fbo.rbo_id};
         water.draw(water_program, &other_textures);
+        // -------------------------------------------------------------------------------------------------------------
+
+        // CUBEMAP -----------------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glUseProgram(cubemap_program.program_id);
+        // set uniforms
+        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+        view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
+        cubemap_program.set_mat4("view", view);
+        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+        cubemap_program.set_mat4("projection", projection);
+        // Draw
+        cubemap.draw(cubemap_program);
         // -------------------------------------------------------------------------------------------------------------
 
 
@@ -309,12 +356,14 @@ int main()
 
 
 
-        // SCREEN ------------------------------------------------------------------------------------------------------
+        // DRAW TO SCREEN ----------------------------------------------------------------------------------------------
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // bind back to default framebuffer
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        // SCREEN ------------------------------------------------------------------------------------------------------
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
         glUseProgram(screen_program.program_id);
         // set uniforms
         set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
@@ -322,6 +371,7 @@ int main()
         other_textures = {screen_fbo.tex_buffer};
         screen.draw(screen_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
+
 
 
 

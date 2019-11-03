@@ -59,6 +59,7 @@ uniform sampler2D texture_normal1;
 
 uniform sampler2D texture_other0; // Reflection texture
 uniform sampler2D texture_other1; // Refraction texture
+uniform sampler2D texture_other2; // Refraction rbo
 
 
 uniform float total_time;
@@ -145,7 +146,7 @@ vec4 compute_water_texture(vec2 tex_coords1, vec2 tex_coords2)
 
     // Fresnel
     vec3 camera_dir = normalize(camera_pos - fs_in.pos.xyz);
-    float fresnel_coef = dot(camera_dir, vec3(0, 1, 0));
+    float fresnel_coef = dot(camera_dir, vec3(0,1,0));
     fresnel_coef = pow(fresnel_coef, 2);
 
     // Combine reflect & refract
@@ -176,7 +177,7 @@ void main()
     //vec3 normal = fs_in.normal; // if no normal map
     vec3 normal = texture(texture_normal1, tex_coords1).rgb;
     normal += texture(texture_normal1, tex_coords2).rgb;
-    normal *= 0.4;
+    normal *= 0.3;
     normal = normalize(normal * 2.0 - 1.0);
     normal = normalize(fs_in.TBN * normal);
 

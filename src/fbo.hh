@@ -5,12 +5,10 @@
 
 class FBO
 {
-private:
-    GLuint rbo_id;
-
 public:
     GLuint fbo_id;
     GLuint tex_buffer;
+    GLuint rbo_id;
 
     FBO(int width, int height);
 };
