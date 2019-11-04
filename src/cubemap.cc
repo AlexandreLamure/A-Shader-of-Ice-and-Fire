@@ -111,5 +111,4 @@ void Cubemap::draw(Program program)
     glBindVertexArray(0);
 
     glDepthFunc(GL_LESS); // set depth function back to default
-
 }

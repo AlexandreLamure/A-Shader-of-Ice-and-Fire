@@ -177,7 +177,7 @@ void main()
     //vec3 normal = fs_in.normal; // if no normal map
     vec3 normal = texture(texture_normal1, tex_coords1).rgb;
     normal += texture(texture_normal1, tex_coords2).rgb;
-    normal *= 0.3;
+    normal *= .25;
     normal = normalize(normal * 2.0 - 1.0);
     normal = normalize(fs_in.TBN * normal);
 

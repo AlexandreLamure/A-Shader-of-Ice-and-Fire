@@ -289,6 +289,7 @@ int main()
         glBindFramebuffer(GL_FRAMEBUFFER, refract_fbo.fbo_id);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         // VOLCANO WITH LAVA -------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);

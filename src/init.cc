@@ -20,7 +20,7 @@ namespace Init
 
     GLFWwindow *init_window(int width, int height)
     {
-        GLFWwindow* window = glfwCreateWindow(width, height, "OpenGL - Glitch", NULL, NULL);
+        GLFWwindow* window = glfwCreateWindow(width, height, "OpenGL - A Shader of Ice and Fire", NULL, NULL);
         if (window == NULL)
         {
             std::cerr << "Failed to create GLFW window" << std::endl;
