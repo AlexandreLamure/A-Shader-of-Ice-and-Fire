@@ -122,7 +122,7 @@ void set_uniforms(Program& program, int window_w, int window_h, float total_time
 int main()
 {
     // window variables
-    int window_w = 1920;
+    int window_w = 1840;
     int window_h = 1020;
 
     // water constant
