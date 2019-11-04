@@ -124,20 +124,16 @@ vec3 compute_lights(Material material, vec3 normal)
     return light_color;
 }
 
-vec4 compute_water_texture(vec2 tex_coords1, vec2 tex_coords2)
+vec4 compute_water_texture(vec2 distortion)
 {
-    const float wave_strength = 0.02;
-
     // Compute Texture coordinates
     vec2 ndc = (fs_in.clip_space.xy / fs_in.clip_space.w) / 2.f + 0.5f;
     vec2 reflect_tex_coords = vec2(ndc.x, -ndc.y);
     vec2 refract_tex_coords = ndc;
 
-    // Add distortion
-    vec2 distortion = texture(texture_diffuse1, tex_coords1).rg + texture(texture_diffuse1, tex_coords2).rg;
-    distortion = (distortion * 2.f - 1.f) * wave_strength;
+    // Add distortion and clamp
     reflect_tex_coords.x = clamp(reflect_tex_coords.x + distortion.x, 0.001f, 0.999f);
-    reflect_tex_coords.y = clamp(reflect_tex_coords.y + distortion.y, -0.001f, -0.999f);
+    reflect_tex_coords.y = clamp(reflect_tex_coords.y + distortion.y, -0.999f, -0.001f);
     refract_tex_coords = clamp(refract_tex_coords + distortion, 0.001f, 0.999f);
 
     // Get texture color
@@ -147,7 +143,7 @@ vec4 compute_water_texture(vec2 tex_coords1, vec2 tex_coords2)
     // Fresnel
     vec3 camera_dir = normalize(camera_pos - fs_in.pos.xyz);
     float fresnel_coef = dot(camera_dir, vec3(0,1,0));
-    fresnel_coef = pow(fresnel_coef, 2);
+    fresnel_coef = pow(fresnel_coef, 1.2);
 
     // Combine reflect & refract
     return mix(reflect, refract, fresnel_coef);
@@ -161,23 +157,21 @@ void main()
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
 
-    // Add blue tint
-    output_color = mix(output_color, vec4(0.0, 0.3, 0.5, 1.0), 0.2);
-
-    /* ------------------------------------------------------- */
-    /* ------------------------------------------------------- */
-
     // Add distortion to texture coordinates
-    vec2 tex_coords1 = vec2(fs_in.tex_coords.x + wave_speed, fs_in.tex_coords.y);
-    vec2 tex_coords2 = vec2(-fs_in.tex_coords.x * wave_speed, fs_in.tex_coords.y + wave_speed);
+    const float wave_strength = 0.02;
+    vec2 distorted_tex_coords = vec2(fs_in.tex_coords.x + wave_speed, fs_in.tex_coords.y);
+    distorted_tex_coords = texture(texture_diffuse1, distorted_tex_coords).rg * 0.1;
+    distorted_tex_coords = fs_in.tex_coords + distorted_tex_coords;
+    distorted_tex_coords.y += wave_speed;
+    vec2 distortion = texture(texture_diffuse1, distorted_tex_coords).rg * 2.0 - 1.0;
+    distortion *= wave_strength;
 
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
 
     //vec3 normal = fs_in.normal; // if no normal map
-    vec3 normal = texture(texture_normal1, tex_coords1).rgb;
-    normal += texture(texture_normal1, tex_coords2).rgb;
-    normal *= .25;
+    vec3 normal = texture(texture_normal1, distorted_tex_coords).rgb;
+    normal *= 0.5;
     normal = normalize(normal * 2.0 - 1.0);
     normal = normalize(fs_in.TBN * normal);
 
@@ -186,7 +180,7 @@ void main()
 
     Material material;
 
-    vec4 diffuse = compute_water_texture(tex_coords1, tex_coords2);
+    vec4 diffuse = compute_water_texture(distortion);
 
     material.ambient = vec3(diffuse);
     material.diffuse = vec3(diffuse);
@@ -194,4 +188,10 @@ void main()
     material.shininess = 20; //FIXME: get value from assimp
 
     output_color *= vec4(compute_lights(material, normal), diffuse.a);
+
+    /* ------------------------------------------------------- */
+    /* ------------------------------------------------------- */
+
+    // Add blue tint
+    output_color = mix(output_color, vec4(0.0, 0.3, 0.5, 0.8), 0.15);
 }
