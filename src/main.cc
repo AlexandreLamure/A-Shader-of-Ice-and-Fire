@@ -122,14 +122,10 @@ void set_uniforms(Program& program, int window_w, int window_h, float total_time
 int main()
 {
     // window variables
-    int window_w = 1420;
-    int window_h = 1080;
+    int window_w = 1920;
+    int window_h = 1020;
 
-    // water constants
-    constexpr int REFLECT_W = 1420;
-    constexpr int REFLECT_H = 1080;
-    constexpr int REFRACT_W = 1420;
-    constexpr int REFRACT_H = 1080;
+    // water constant
     constexpr float water_h = 7.0f; // FIXME: get this from obj
 
     // time variables
@@ -190,8 +186,8 @@ int main()
 
 
     FBO screen_fbo = FBO(window_w, window_h);
-    FBO reflect_fbo = FBO(REFLECT_W, REFLECT_H);
-    FBO refract_fbo = FBO(REFRACT_W, REFRACT_H);
+    FBO reflect_fbo = FBO(window_w, window_h);
+    FBO refract_fbo = FBO(window_w, window_h);
 
 
 
