@@ -22,6 +22,7 @@ out TCS_OUT
     vec3 bitangent;
 } tcs_out[];
 
+
 void main(void)
 {
     gl_TessLevelInner[0] = 4; // horizontal
@@ -32,7 +33,7 @@ void main(void)
     gl_TessLevelOuter[2] = 4; // edge 1-2
     gl_TessLevelOuter[3] = 4; // edge 0-1
 
-    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+    gl_out[ID].gl_Position = gl_in[ID].gl_Position;
 
     tcs_out[ID].pos = tcs_in[ID].pos;
     tcs_out[ID].normal = tcs_in[ID].normal;

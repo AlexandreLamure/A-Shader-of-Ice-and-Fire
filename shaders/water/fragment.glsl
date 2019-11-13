@@ -32,7 +32,6 @@ struct PointLight
 };
 
 
-
 in GS_OUT
 {
     vec4 pos;
@@ -59,7 +58,7 @@ uniform sampler2D texture_normal1;
 
 uniform sampler2D texture_other0; // Reflection texture
 uniform sampler2D texture_other1; // Refraction texture
-uniform sampler2D texture_other2; // Refraction rbo
+uniform sampler2D texture_other2; // Refraction depth texture
 
 
 uniform float total_time;
@@ -186,7 +185,7 @@ void main()
 
     material.ambient = vec3(diffuse);
     material.diffuse = vec3(diffuse);
-    material.specular = vec3(diffuse);
+    material.specular = vec3(diffuse); // * 2
     material.shininess = 20; //FIXME: get value from assimp
 
     output_color *= vec4(compute_lights(material, normal), diffuse.a);

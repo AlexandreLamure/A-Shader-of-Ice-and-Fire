@@ -16,17 +16,6 @@ out VS_OUT
 } vs_out;
 
 
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-uniform int mesh_id;
-uniform float total_time;
-uniform int rand;
-
-uniform vec4 clip_plane;
-
-
 void main()
 {
     vs_out.pos = vec4(position, 1);

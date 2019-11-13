@@ -31,7 +31,7 @@ void main()
 {
     vec4 p1 = mix(gl_in[1].gl_Position, gl_in[0].gl_Position, gl_TessCoord.x);
     vec4 p2 = mix(gl_in[2].gl_Position, gl_in[3].gl_Position, gl_TessCoord.x);
-    gl_Position = mix(p1, p2, gl_TessCoord.y);
+    gl_Position = projection * view * model * mix(p1, p2, gl_TessCoord.y);
 
     vec4 pos1 = mix(tes_in[1].pos, tes_in[0].pos, gl_TessCoord.x);
     vec4 pos2 = mix(tes_in[2].pos, tes_in[3].pos, gl_TessCoord.x);
@@ -56,6 +56,8 @@ void main()
     tes_out.pos = model * position;
     tes_out.normal = mat3(transpose(inverse(model))) * normal; // we only keep the scale and rotations from model matrix
     tes_out.tex_coords = tex_coords;
+    tes_out.clip_space = projection * view * tes_out.pos;
+    gl_ClipDistance[0] = dot(tes_out.pos, clip_plane); // FIXME: use model matrix to modify clip_plane
 
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
@@ -65,9 +67,4 @@ void main()
     vec3 N = normalize(vec3(model * vec4(normal, 0.0)));
     T = normalize(T - dot(T, N) * N);
     tes_out.TBN = mat3(T, B, N);
-
-    gl_ClipDistance[0] = dot(tes_out.pos, clip_plane); // FIXME: use model matrix to modify clip_plane
-    gl_Position = projection * view * tes_out.pos;
-
-    tes_out.clip_space = projection * view * tes_out.pos;
 }
