@@ -143,7 +143,7 @@ vec4 compute_water_texture(vec2 distortion)
     // Fresnel
     vec3 camera_dir = normalize(camera_pos - fs_in.pos.xyz);
     float fresnel_coef = dot(camera_dir, vec3(0,1,0));
-    fresnel_coef = pow(fresnel_coef, 1.2);
+    fresnel_coef = pow(fresnel_coef, 1.8);
 
     // Combine reflect & refract
     return mix(reflect, refract, fresnel_coef);
@@ -181,6 +181,8 @@ void main()
     Material material;
 
     vec4 diffuse = compute_water_texture(distortion);
+    // height map
+    //diffuse = vec4(vec3(texture(texture_other2, fs_in.tex_coords).r), 1);
 
     material.ambient = vec3(diffuse);
     material.diffuse = vec3(diffuse);

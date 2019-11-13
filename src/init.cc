@@ -60,6 +60,8 @@ namespace Init
         glEnable(GL_CLIP_DISTANCE0);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        // Patch option
+        //glPatchParameteri(GL_PATCH_VERTICES, 3);
 
         // tell the size of window to openGL
         glViewport(0, 0, width, height);

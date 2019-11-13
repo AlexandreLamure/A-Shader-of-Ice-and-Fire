@@ -142,36 +142,44 @@ int main()
 
 
 
-    // RENDER PROGRAM --------------------------------------------------------------------------------------------------
+    // VOLCANO PROGRAM -------------------------------------------------------------------------------------------------
     std::vector<const char*> vertex_paths{"../shaders/volcano/vertex.glsl"};
+    std::vector<const char*> tc_paths{};
+    std::vector<const char*> te_paths{};
     std::vector<const char*> geometry_paths{"../shaders/volcano/geometry.glsl"};
     std::vector<const char*> frag_paths{"../shaders/utils/simplex.glsl",
                                         "../shaders/volcano/fragment.glsl"};
-    Program volcano_program(vertex_paths, geometry_paths, frag_paths);
+    Program volcano_program(vertex_paths, tc_paths, te_paths, geometry_paths, frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
 
     // WATER PROGRAM ---------------------------------------------------------------------------------------------------
     std::vector<const char*> water_vertex_paths{"../shaders/water/vertex.glsl"};
+    std::vector<const char*> water_tc_paths{"../shaders/water/tcontrol.glsl"};
+    std::vector<const char*> water_te_paths{"../shaders/water/teval.glsl"};
     std::vector<const char*> water_geometry_paths{"../shaders/water/geometry.glsl"};
     std::vector<const char*> water_frag_paths{"../shaders/water/fragment.glsl"};
-    Program water_program(water_vertex_paths, water_geometry_paths, water_frag_paths);
+    Program water_program(water_vertex_paths, water_tc_paths, water_te_paths, water_geometry_paths, water_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
 
     // CUBEMAP PROGRAM -------------------------------------------------------------------------------------------------
     std::vector<const char*> cubemap_vertex_paths{"../shaders/cubemap/vertex.glsl"};
+    std::vector<const char*> cubemap_tc_paths{};
+    std::vector<const char*> cubemap_te_paths{};
     std::vector<const char*> cubemap_geometry_paths{};
     std::vector<const char*> cubemap_frag_paths{"../shaders/cubemap/fragment.glsl"};
-    Program cubemap_program(cubemap_vertex_paths, cubemap_geometry_paths, cubemap_frag_paths);
+    Program cubemap_program(cubemap_vertex_paths, cubemap_tc_paths, cubemap_te_paths, cubemap_geometry_paths, cubemap_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
 
     // SCREEN PROGRAM --------------------------------------------------------------------------------------------------
     std::vector<const char*> screen_vertex_paths{"../shaders/screen/vertex.glsl"};
+    std::vector<const char*> screen_tc_paths{};
+    std::vector<const char*> screen_te_paths{};
     std::vector<const char*> screen_geometry_paths{};
     std::vector<const char*> screen_frag_paths{"../shaders/screen/fragment.glsl"};
-    Program screen_program(screen_vertex_paths, screen_geometry_paths, screen_frag_paths);
+    Program screen_program(screen_vertex_paths, screen_tc_paths, screen_te_paths, screen_geometry_paths, screen_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
 
@@ -180,7 +188,8 @@ int main()
 
     Model screen("../models/screen/screen.obj");
     Model water("../models/water/water.obj");
-    Model volcan_wl("../models/volcan_with_lava/volcan_with_lava.obj");
+    Model volcan_wc("../models/volcan_with_cave/volcan_with_cave.obj");
+    Model lamp1("../models/lamp1/lamp1.obj");
 
     Cubemap cubemap = Cubemap();
 
@@ -203,13 +212,13 @@ int main()
                                   {1.0f, 1.0f, 1.0f}, // specular
                                   {1.f, -1.f, -1.f})); // direction
     point_lights.push_back(PointLight({0.1f, 0.1f, 0.1f}, // ambient
-                                      {1.0f, 1.0f, 1.0f}, // diffuse
-                                      {1.0f, 1.0f, 1.0f}, // specular
-                                      {-12.0f, 2.f, 2.f})); // position
-    point_lights.push_back(PointLight({0.8f, 0.0f, 0.3f}, // ambient
-                                      {1.0f, 1.0f, 1.0f}, // diffuse
-                                      {1.0f, 1.0f, 1.0f}, // specular
-                                      {5.0f, 0.0f, 2.0f})); // position
+                                      {10.0f, 1.0f, 10.0f}, // diffuse
+                                      {10.0f, 1.0f, 10.0f}, // specular
+                                      {-18.0f, 15.f, -8.f})); // position
+    point_lights.push_back(PointLight({0.1f, 0.1f, 0.1f}, // ambient
+                                      {1.0f, 8.0f, 8.0f}, // diffuse
+                                      {1.0f, 8.0f, 8.0f}, // specular
+                                      {26.0f, 25.0f, 10.0f})); // position
 
 
     // To avoid redeclaration
@@ -255,7 +264,8 @@ int main()
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, 1, 0, -water_h});
         volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wl.draw(volcano_program, nullptr);
+        volcan_wc.draw(volcano_program, nullptr);
+        lamp1.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
         // CUBEMAP -----------------------------------------------------------------------------------------------------
@@ -294,7 +304,8 @@ int main()
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, -1, 0, water_h});
         volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wl.draw(volcano_program, nullptr);
+        volcan_wc.draw(volcano_program, nullptr);
+        lamp1.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
 
@@ -314,7 +325,8 @@ int main()
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
         volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wl.draw(volcano_program, nullptr);
+        volcan_wc.draw(volcano_program, nullptr);
+        lamp1.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
         // WATER -------------------------------------------------------------------------------------------------------
@@ -329,7 +341,7 @@ int main()
         water_program.set_float("wave_speed", wave_speed);
         water_program.set_mat4("model", model_mat);
         // Draw
-        other_textures = {reflect_fbo.tex_buffer, refract_fbo.tex_buffer, refract_fbo.rbo_id};
+        other_textures = {reflect_fbo.color_texture, refract_fbo.color_texture, refract_fbo.depth_texture};
         water.draw(water_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
 
@@ -365,7 +377,7 @@ int main()
         // set uniforms
         set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
         // Draw
-        other_textures = {screen_fbo.tex_buffer};
+        other_textures = {screen_fbo.color_texture};
         screen.draw(screen_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
 

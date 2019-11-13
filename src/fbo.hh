@@ -7,8 +7,8 @@ class FBO
 {
 public:
     GLuint fbo_id;
-    GLuint tex_buffer;
-    GLuint rbo_id;
+    GLuint color_texture;
+    GLuint depth_texture;
 
     FBO(int width, int height);
 };

@@ -11,8 +11,8 @@ out VS_OUT
     vec4 pos;
     vec3 normal;
     vec2 tex_coords;
-    mat3 TBN;
-    vec4 clip_space;
+    vec3 tangent;
+    vec3 bitangent;
 } vs_out;
 
 
@@ -29,21 +29,11 @@ uniform vec4 clip_plane;
 
 void main()
 {
-    vs_out.pos = model * vec4(position, 1);
-    vs_out.normal = mat3(transpose(inverse(model))) * normal; // we only keep the scale and rotations from model matrix
+    vs_out.pos = vec4(position, 1);
+    vs_out.normal = normal;
     vs_out.tex_coords = tex_coords;
+    vs_out.tangent = tangent;
+    vs_out.bitangent = bitangent;
 
-    /* ------------------------------------------------------- */
-    /* ------------------------------------------------------- */
-
-    vec3 T = normalize(vec3(model * vec4(tangent, 0.0)));
-    vec3 B = normalize(vec3(model * vec4(bitangent, 0.0)));
-    vec3 N = normalize(vec3(model * vec4(normal, 0.0)));
-    T = normalize(T - dot(T, N) * N);
-    vs_out.TBN = mat3(T, B, N);
-
-    gl_ClipDistance[0] = dot(vs_out.pos, clip_plane); // FIXME: use model matrix to modify clip_plane
-    gl_Position = projection * view * vs_out.pos;
-
-    vs_out.clip_space = projection * view * vs_out.pos;
+    gl_Position = vs_out.pos;
 }
