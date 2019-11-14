@@ -27,7 +27,6 @@ out GS_OUT
     vec4 clip_space;
 } gs_out;
 
-
 vec3 compute_decay(vec2 tex_coords, mat3 TBN)
 {
     // Add distortion to texture coordinates
@@ -56,8 +55,9 @@ void set_out(int index)
     gl_ClipDistance[0] = gl_in[index].gl_ClipDistance[0];
 
     vec3 decay = compute_decay(gs_in[index].tex_coords, gs_in[index].TBN);
-    float d = decay.z * 20;
+    float d = (decay.x + decay.z) * 1.5;
     gl_Position.y += d;
+    gs_out.pos.y += d;
 }
 
 void main()

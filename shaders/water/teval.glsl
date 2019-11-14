@@ -1,6 +1,6 @@
 #version 450
 
-layout (quads, equal_spacing, ccw) in;
+layout (triangles, equal_spacing, ccw) in;
 
 in TCS_OUT
 {
@@ -28,29 +28,30 @@ uniform vec4 clip_plane;
 
 void main()
 {
-    vec4 p1 = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);
-    vec4 p2 = mix(gl_in[3].gl_Position, gl_in[2].gl_Position, gl_TessCoord.x);
-    gl_Position = projection * view * model * mix(p1, p2, gl_TessCoord.y);
+    gl_Position = gl_in[0].gl_Position * gl_TessCoord.x
+                + gl_in[1].gl_Position * gl_TessCoord.y
+                + gl_in[2].gl_Position * gl_TessCoord.z;
+    gl_Position = projection * view * model * gl_Position;
 
-    vec4 pos1 = mix(tes_in[0].pos, tes_in[1].pos, gl_TessCoord.x);
-    vec4 pos2 = mix(tes_in[3].pos, tes_in[2].pos, gl_TessCoord.x);
-    vec4 position = mix(pos1, pos2, gl_TessCoord.y);
+    vec4 position = tes_in[0].pos * gl_TessCoord.x
+                    + tes_in[1].pos * gl_TessCoord.y
+                    + tes_in[2].pos * gl_TessCoord.z;
 
-    vec3 n1 = mix(tes_in[0].normal, tes_in[1].normal, gl_TessCoord.x);
-    vec3 n2 = mix(tes_in[3].normal, tes_in[2].normal, gl_TessCoord.x);
-    vec3 normal = mix(n1, n2, gl_TessCoord.y);
+    vec3 normal = tes_in[0].normal * gl_TessCoord.x
+                + tes_in[1].normal * gl_TessCoord.y
+                + tes_in[2].normal * gl_TessCoord.z;
 
-    vec2 t1 = mix(tes_in[0].tex_coords, tes_in[1].tex_coords, gl_TessCoord.x);
-    vec2 t2 = mix(tes_in[3].tex_coords, tes_in[2].tex_coords, gl_TessCoord.x);
-    vec2 tex_coords = mix(t1, t2, gl_TessCoord.y);
+    vec2 tex_coords = tes_in[0].tex_coords * gl_TessCoord.x
+                    + tes_in[1].tex_coords * gl_TessCoord.y
+                    + tes_in[2].tex_coords * gl_TessCoord.z;
 
-    vec3 ta1 = mix(tes_in[0].tangent, tes_in[1].tangent, gl_TessCoord.x);
-    vec3 ta2 = mix(tes_in[3].tangent, tes_in[2].tangent, gl_TessCoord.x);
-    vec3 tangent = mix(ta1, ta2, gl_TessCoord.y);
+    vec3 tangent = tes_in[0].tangent * gl_TessCoord.x
+                + tes_in[1].tangent * gl_TessCoord.y
+                + tes_in[2].tangent * gl_TessCoord.z;
 
-    vec3 b1 = mix(tes_in[0].bitangent, tes_in[1].bitangent, gl_TessCoord.x);
-    vec3 b2 = mix(tes_in[3].bitangent, tes_in[2].bitangent, gl_TessCoord.x);
-    vec3 bitangent = mix(b1, b2, gl_TessCoord.y);
+    vec3 bitangent = tes_in[0].bitangent * gl_TessCoord.x
+                    + tes_in[1].bitangent * gl_TessCoord.y
+                    + tes_in[2].bitangent * gl_TessCoord.z;
 
     tes_out.pos = model * position;
     tes_out.normal = mat3(transpose(inverse(model))) * normal; // we only keep the scale and rotations from model matrix

@@ -157,7 +157,7 @@ int main()
     std::vector<const char*> water_vertex_paths{"../shaders/water/vertex.glsl"};
     std::vector<const char*> water_tc_paths{"../shaders/water/tcontrol.glsl"};
     std::vector<const char*> water_te_paths{"../shaders/water/teval.glsl"};
-    std::vector<const char*> water_geometry_paths{"../shaders/water/geometry.glsl"};
+    std::vector<const char*> water_geometry_paths{"../shaders/utils/simplex.glsl", "../shaders/water/geometry.glsl"};
     std::vector<const char*> water_frag_paths{"../shaders/water/fragment.glsl"};
     Program water_program(water_vertex_paths, water_tc_paths, water_te_paths, water_geometry_paths, water_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
@@ -342,7 +342,7 @@ int main()
         glUseProgram(water_program.program_id);
         // set uniforms
         set_uniforms(water_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
-        float slow_time = total_time * 0.008;
+        float slow_time = total_time * 0.006;
         float wave_speed = (slow_time - static_cast<int>(slow_time));
         wave_speed = std::max(wave_speed, 1.f - wave_speed) * 2.f;
         water_program.set_float("wave_speed", wave_speed);

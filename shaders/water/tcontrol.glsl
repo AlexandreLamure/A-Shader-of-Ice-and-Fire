@@ -2,7 +2,7 @@
 
 #define ID gl_InvocationID
 
-layout (vertices = 4) out;
+layout (vertices = 3) out;
 
 in VS_OUT
 {
@@ -25,13 +25,14 @@ out TCS_OUT
 
 void main(void)
 {
-    gl_TessLevelInner[0] = 21;// horizontal
-    gl_TessLevelInner[0] = 21;// vertical
+    if (ID == 0)
+    {
+        gl_TessLevelInner[0] = 32;// horizontal
 
-    gl_TessLevelOuter[0] = 4;// edge 0-3
-    gl_TessLevelOuter[1] = 4;// edge 2-3
-    gl_TessLevelOuter[2] = 4;// edge 1-2
-    gl_TessLevelOuter[3] = 4;// edge 0-1
+        gl_TessLevelOuter[0] = 32;// edge 0-3
+        gl_TessLevelOuter[1] = 32;// edge 2-3
+        gl_TessLevelOuter[2] = 32;// edge 1-2
+    }
 
     gl_out[ID].gl_Position = gl_in[ID].gl_Position;
 
