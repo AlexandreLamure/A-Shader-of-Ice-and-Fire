@@ -195,4 +195,7 @@ void main()
 
     // Add blue tint
     output_color = mix(output_color, vec4(0.0, 0.3, 0.5, 0.8), 0.15);
+
+
+    //output_color = vec4(vec3(texture(texture_other2, fs_in.tex_coords).r), 1);
 }
