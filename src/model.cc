@@ -4,8 +4,10 @@
 #include "../lib/stb/stb_image.h"
 
 
-Model::Model(std::string path)
+Model::Model(std::string path, GLuint draw_mode)
 {
+    this->draw_mode = draw_mode;
+
     // load model
     Assimp::Importer import;
     const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
@@ -101,7 +103,7 @@ Mesh Model::process_mesh(aiMesh *mesh, const aiScene *scene)
         textures.insert(textures.end(), ambient_maps.begin(), ambient_maps.end());
     }
 
-    return Mesh(vertices, indices, textures);
+    return Mesh(vertices, indices, textures, draw_mode);
 }
 
 

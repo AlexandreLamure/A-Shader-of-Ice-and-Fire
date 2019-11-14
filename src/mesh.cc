@@ -1,15 +1,17 @@
 #include "mesh.hh"
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, GLuint draw_mode)
 {
     this->vertices = vertices;
     this->indices = indices;
     this->textures = textures;
+    this->draw_mode = draw_mode;
 
     setupMesh();
 }
 
-void Mesh::setupMesh() {
+void Mesh::setupMesh()
+{
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -41,7 +43,8 @@ void Mesh::setupMesh() {
     glBindVertexArray(0);
 }
 
-void Mesh::draw(Program program, std::vector<GLuint>* other_textures) {
+void Mesh::draw(Program program, std::vector<GLuint>* other_textures)
+{
     unsigned int diffuse_n = 1;
     unsigned int specular_n = 1;
     unsigned int normal_n = 1;
@@ -78,6 +81,6 @@ void Mesh::draw(Program program, std::vector<GLuint>* other_textures) {
 
     // draw mesh
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(draw_mode, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }

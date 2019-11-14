@@ -56,8 +56,7 @@ void set_out(int index)
     gl_ClipDistance[0] = gl_in[index].gl_ClipDistance[0];
 
     vec3 decay = compute_decay(gs_in[index].tex_coords, gs_in[index].TBN);
-    float d = decay.z;
-    gs_out.pos.y += d;
+    float d = decay.z * 20;
     gl_Position.y += d;
 }
 

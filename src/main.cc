@@ -186,10 +186,10 @@ int main()
 
 
 
-    Model screen("../models/screen/screen.obj");
-    Model water("../models/water/water.obj");
-    Model volcan_wc("../models/volcan_with_cave/volcan_with_cave.obj");
-    Model lamp1("../models/lamp1/lamp1.obj");
+    Model screen("../models/screen/screen.obj", GL_TRIANGLES);
+    Model water("../models/water/water.obj", GL_PATCHES);
+    Model volcan_wc("../models/volcan_with_cave/volcan_with_cave.obj", GL_TRIANGLES);
+    Model lamp1("../models/lamp1/lamp1.obj", GL_TRIANGLES);
 
     Cubemap cubemap = Cubemap();
 

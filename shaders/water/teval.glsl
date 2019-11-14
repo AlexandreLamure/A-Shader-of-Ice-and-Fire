@@ -26,31 +26,30 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform vec4 clip_plane;
 
-
 void main()
 {
-    vec4 p1 = mix(gl_in[1].gl_Position, gl_in[0].gl_Position, gl_TessCoord.x);
-    vec4 p2 = mix(gl_in[2].gl_Position, gl_in[3].gl_Position, gl_TessCoord.x);
+    vec4 p1 = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);
+    vec4 p2 = mix(gl_in[3].gl_Position, gl_in[2].gl_Position, gl_TessCoord.x);
     gl_Position = projection * view * model * mix(p1, p2, gl_TessCoord.y);
 
-    vec4 pos1 = mix(tes_in[1].pos, tes_in[0].pos, gl_TessCoord.x);
-    vec4 pos2 = mix(tes_in[2].pos, tes_in[3].pos, gl_TessCoord.x);
+    vec4 pos1 = mix(tes_in[0].pos, tes_in[1].pos, gl_TessCoord.x);
+    vec4 pos2 = mix(tes_in[3].pos, tes_in[2].pos, gl_TessCoord.x);
     vec4 position = mix(pos1, pos2, gl_TessCoord.y);
 
-    vec3 n1 = mix(tes_in[1].normal, tes_in[0].normal, gl_TessCoord.x);
-    vec3 n2 = mix(tes_in[2].normal, tes_in[3].normal, gl_TessCoord.x);
+    vec3 n1 = mix(tes_in[0].normal, tes_in[1].normal, gl_TessCoord.x);
+    vec3 n2 = mix(tes_in[3].normal, tes_in[2].normal, gl_TessCoord.x);
     vec3 normal = mix(n1, n2, gl_TessCoord.y);
 
-    vec2 t1 = mix(tes_in[1].tex_coords, tes_in[0].tex_coords, gl_TessCoord.x);
-    vec2 t2 = mix(tes_in[2].tex_coords, tes_in[3].tex_coords, gl_TessCoord.x);
+    vec2 t1 = mix(tes_in[0].tex_coords, tes_in[1].tex_coords, gl_TessCoord.x);
+    vec2 t2 = mix(tes_in[3].tex_coords, tes_in[2].tex_coords, gl_TessCoord.x);
     vec2 tex_coords = mix(t1, t2, gl_TessCoord.y);
 
-    vec3 ta1 = mix(tes_in[1].tangent, tes_in[0].tangent, gl_TessCoord.x);
-    vec3 ta2 = mix(tes_in[2].tangent, tes_in[3].tangent, gl_TessCoord.x);
+    vec3 ta1 = mix(tes_in[0].tangent, tes_in[1].tangent, gl_TessCoord.x);
+    vec3 ta2 = mix(tes_in[3].tangent, tes_in[2].tangent, gl_TessCoord.x);
     vec3 tangent = mix(ta1, ta2, gl_TessCoord.y);
 
-    vec3 b1 = mix(tes_in[1].bitangent, tes_in[0].bitangent, gl_TessCoord.x);
-    vec3 b2 = mix(tes_in[2].bitangent, tes_in[3].bitangent, gl_TessCoord.x);
+    vec3 b1 = mix(tes_in[0].bitangent, tes_in[1].bitangent, gl_TessCoord.x);
+    vec3 b2 = mix(tes_in[3].bitangent, tes_in[2].bitangent, gl_TessCoord.x);
     vec3 bitangent = mix(b1, b2, gl_TessCoord.y);
 
     tes_out.pos = model * position;

@@ -24,13 +24,17 @@ struct Texture {
 };
 
 class Mesh {
+private:
+    GLuint draw_mode;
+
 public:
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
 
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, GLuint draw_mode);
     void draw(Program program, std::vector<GLuint>* other_textures);
+
 
 private:
     unsigned int VAO, VBO, EBO;
