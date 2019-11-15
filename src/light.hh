@@ -11,7 +11,6 @@ public:
     glm::vec3 specular;
 
     Light(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular);
-    virtual void set(Program program, int index) = 0;
 };
 
 class DirLight: public Light
@@ -32,6 +31,7 @@ public:
     float linear;
     float quadratic;
 
+    PointLight();
     PointLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, glm::vec3 pos);
     void set(Program program, int index);
 };

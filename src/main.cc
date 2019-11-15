@@ -89,7 +89,7 @@ void process_input(GLFWwindow *window, float delta_time)
 
 
 void set_uniforms(Program& program, int window_w, int window_h, float total_time, float delta_time,
-                  std::vector<DirLight>& dir_lights, std::vector<PointLight>& point_lights,
+                  std::vector<DirLight>& dir_lights, std::vector<LightModel>& model_lights,
                   glm::vec4 clip_plane)
 {
     // set uniforms
@@ -102,8 +102,8 @@ void set_uniforms(Program& program, int window_w, int window_h, float total_time
     // set lights
     for (int i = 0; i < dir_lights.size(); ++i)
         dir_lights[i].set(program, i);
-    for (int i = 0; i < point_lights.size(); ++i)
-        point_lights[i].set(program, i);
+    for (int i = 0; i < model_lights.size(); ++i)
+        model_lights[i].pointlight.set(program, i);
 
     program.set_vec3("camera_pos", camera.pos);
     program.set_vec2("mouse_pos", camera.mouse_pos);
@@ -122,8 +122,9 @@ void set_uniforms(Program& program, int window_w, int window_h, float total_time
 int main()
 {
     // window variables
-    int window_w = 1840;
-    int window_h = 1020;
+    // alex 1840 1020
+    int window_w = 1000;
+    int window_h = 700;
 
     // water constant
     constexpr float water_h = 7.0f; // FIXME: get this from obj
@@ -183,13 +184,18 @@ int main()
     // -----------------------------------------------------------------------------------------------------------------
 
 
+    std::vector<LightModel> model_lights;
 
+    Light li = Light({0.1f, 0.1f, 0.1f}, {10.0f, 1.0f, 10.0f}, {10.0f, 1.0f, 10.0f});
 
 
     Model screen("../models/screen/screen.obj", GL_TRIANGLES);
     Model water("../models/water/waterLOD2.obj", GL_PATCHES);
-    Model volcan_wc("../models/volcan_with_cave/volcan_with_cave.obj", GL_TRIANGLES);
-    Model lamp1("../models/lamp1/lamp1.obj", GL_TRIANGLES);
+    Model volcan_wc("../new_models/volcan_with_sand/volcan_with_sand.obj", GL_TRIANGLES);
+    Model lamp1("../new_models/lamp1/lamp1.obj", GL_TRIANGLES);
+    LightModel light1("../new_models/light1/light1.obj", GL_TRIANGLES, li);
+
+    model_lights.push_back(light1);
 
     Cubemap cubemap = Cubemap();
 
@@ -202,7 +208,7 @@ int main()
 
     // Create Lights
     std::vector<DirLight> dir_lights;
-    std::vector<PointLight> point_lights;
+    //std::vector<PointLight> point_lights;
     dir_lights.push_back(DirLight({0.1f, 0.1f, 0.1f}, // ambient
                                   {1.0f, 1.0f, 1.0f}, // diffuse
                                   {1.0f, 1.0f, 1.0f}, // specular
@@ -211,6 +217,8 @@ int main()
                                   {1.0f, 1.0f, 1.0f}, // diffuse
                                   {1.0f, 1.0f, 1.0f}, // specular
                                   {1.f, -1.f, -1.f})); // direction
+
+    /*
     point_lights.push_back(PointLight({0.1f, 0.1f, 0.1f}, // ambient
                                       {10.0f, 1.0f, 10.0f}, // diffuse
                                       {10.0f, 1.0f, 10.0f}, // specular
@@ -218,7 +226,7 @@ int main()
     point_lights.push_back(PointLight({0.1f, 0.1f, 0.1f}, // ambient
                                       {1.0f, 8.0f, 8.0f}, // diffuse
                                       {1.0f, 8.0f, 8.0f}, // specular
-                                      {26.0f, 25.0f, 10.0f})); // position
+                                      {26.0f, 25.0f, 10.0f})); // position */
 
 
     // To avoid redeclaration
@@ -263,11 +271,12 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
         // set uniforms
-        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, 1, 0, -water_h});
+        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h});
         volcano_program.set_mat4("model", model_mat);
         // Draw
         volcan_wc.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
+        light1.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
         // CUBEMAP -----------------------------------------------------------------------------------------------------
@@ -305,11 +314,12 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
         // set uniforms
-        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, -1, 0, water_h});
+        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, -1, 0, water_h});
         volcano_program.set_mat4("model", model_mat);
         // Draw
         volcan_wc.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
+        light1.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
 
@@ -329,11 +339,12 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
         // set uniforms
-        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
+        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0,0,0,0});
         volcano_program.set_mat4("model", model_mat);
         // Draw
         volcan_wc.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
+        light1.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
         // WATER -------------------------------------------------------------------------------------------------------
@@ -341,7 +352,7 @@ int main()
         glDisable(GL_CULL_FACE);
         glUseProgram(water_program.program_id);
         // set uniforms
-        set_uniforms(water_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
+        set_uniforms(water_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0,0,0,0});
         float slow_time = total_time * 0.007;
         float wave_speed = (slow_time - static_cast<int>(slow_time));
         wave_speed = std::max(wave_speed, 1.f - wave_speed) * 2.f;
@@ -384,7 +395,7 @@ int main()
         glDisable(GL_CULL_FACE);
         glUseProgram(screen_program.program_id);
         // set uniforms
-        set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
+        set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0,0,0,0});
         // Draw
         other_textures = {screen_fbo.color_texture};
         screen.draw(screen_program, &other_textures);

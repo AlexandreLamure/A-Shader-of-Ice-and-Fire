@@ -34,6 +34,15 @@ void DirLight::set(Program program, int index)
 
 /* Point Light ------------------------------------------------------------------------------------------------------ */
 
+PointLight::PointLight()
+        : Light(glm::vec3(0), glm::vec3(0), glm::vec3(0))
+{
+    this->pos = glm::vec3(0);
+    this->constant = 1.0f;
+    this->linear = 0.09f;
+    this->quadratic = 0.032f;
+}
+
 PointLight::PointLight(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, glm::vec3 pos)
     : Light(ambient, diffuse, specular)
 {

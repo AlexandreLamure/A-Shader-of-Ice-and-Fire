@@ -186,3 +186,32 @@ void Model::draw(Program program, std::vector<GLuint>* other_textures)
         meshes[i].draw(program, other_textures);
     }
 }
+
+/* Light Model ------------------------------------------------------------------------------------------------------ */
+
+LightModel::LightModel(std::string path, GLuint draw_mode, Light light)
+        : Model(path, draw_mode)
+{
+    float x = 0.f;
+    float y = 0.f;
+    float z = 0.f;
+
+    float cpt = 0.f;
+
+    for (int i = 0; i < meshes.size(); ++i)
+    {
+        auto tmp = meshes[i];
+        for (int j = 0; j < tmp.vertices.size(); ++j)
+        {
+            x += tmp.vertices[j].position.x;
+            y += tmp.vertices[j].position.y;
+            z += tmp.vertices[j].position.z;
+
+            cpt += 1.f;
+        }
+    }
+
+    glm::vec3 pos = {x / cpt, y / cpt, z / cpt};
+
+    pointlight = PointLight(light.ambient, light.diffuse, light.specular, pos);
+}

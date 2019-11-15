@@ -45,7 +45,7 @@ out vec4 output_color;
 
 
 #define NB_DIR_LIGHTS 2
-#define NB_POINT_LIGHTS 2
+#define NB_POINT_LIGHTS 1
 
 uniform DirLight dir_lights[NB_DIR_LIGHTS];
 uniform PointLight point_lights[NB_POINT_LIGHTS];

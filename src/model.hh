@@ -6,9 +6,10 @@
 #include <assimp/postprocess.h>
 
 #include "mesh.hh"
+#include "light.hh"
 
 class Model {
-private:
+protected:
     std::vector<Mesh> meshes;
     std::string directory;
     std::vector<Texture> textures_loaded;
@@ -23,4 +24,13 @@ private:
 public:
     Model(std::string path, GLuint draw_mode);
     void draw(Program program, std::vector<GLuint>* other_textures);
+};
+
+class LightModel : public Model {
+
+public:
+    PointLight pointlight;
+
+    LightModel(std::string path, GLuint draw_mode, Light light);
+
 };
