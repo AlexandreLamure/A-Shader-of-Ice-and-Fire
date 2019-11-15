@@ -1,7 +1,7 @@
 #include <glad/glad.h>
 #include <string>
 #include <vector>
-#include <stb_image.h>
+#include "../lib/stb/stb_image.h"
 #include <iostream>
 #include "cubemap.hh"
 #include "program.hh"
