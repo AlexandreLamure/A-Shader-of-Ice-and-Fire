@@ -156,11 +156,15 @@ int main()
 
     // VOLCANO PROGRAM -------------------------------------------------------------------------------------------------
     std::vector<const char*> lava_vertex_paths{"../shaders/lava/vertex.glsl"};
-    std::vector<const char*> lava_tc_paths{};
-    std::vector<const char*> lava_te_paths{};
-    std::vector<const char*> lava_geometry_paths{"../shaders/lava/geometry.glsl"};
+    std::vector<const char*> lava_tc_paths{"../shaders/lava/tcontrol.glsl"};
+    std::vector<const char*> lava_te_paths{"../shaders/lava/teval.glsl"};
+    std::vector<const char*> lava_geometry_paths{"../shaders/utils/misc.glsl",
+                                                 "../shaders/utils/simplex.glsl",
+                                                 "../shaders/utils/lava_texture.glsl",
+                                                 "../shaders/lava/geometry.glsl"};
     std::vector<const char*> lava_frag_paths{"../shaders/utils/misc.glsl",
                                              "../shaders/utils/simplex.glsl",
+                                             "../shaders/utils/lava_texture.glsl",
                                              "../shaders/lava/fragment.glsl"};
     Program lava_program(lava_vertex_paths, lava_tc_paths, lava_te_paths, lava_geometry_paths, lava_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
@@ -204,7 +208,7 @@ int main()
     Model screen("../models/screen/screen.obj", GL_TRIANGLES);
     Model water("../models/water/waterLOD1.obj", GL_PATCHES);
     Model volcano("../models/volcan/volcan.obj", GL_TRIANGLES);
-    Model lava("../models/lava/lava.obj", GL_TRIANGLES);
+    Model lava("../models/lava/lava.obj", GL_PATCHES);
     Model lamp1("../models/lamp1/lamp1.obj", GL_TRIANGLES);
     LightModel light1("../new_models/light1/light1.obj", GL_TRIANGLES, li);
 
