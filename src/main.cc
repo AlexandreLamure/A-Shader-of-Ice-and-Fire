@@ -162,10 +162,12 @@ int main()
     std::vector<const char*> lava_geometry_paths{"../shaders/utils/misc.glsl",
                                                  "../shaders/utils/simplex.glsl",
                                                  "../shaders/utils/lava_texture.glsl",
+                                                 "../shaders/utils/ice.glsl",
                                                  "../shaders/lava/geometry.glsl"};
     std::vector<const char*> lava_frag_paths{"../shaders/utils/misc.glsl",
                                              "../shaders/utils/simplex.glsl",
                                              "../shaders/utils/lava_texture.glsl",
+                                             "../shaders/utils/ice.glsl",
                                              "../shaders/lava/fragment.glsl"};
     Program lava_program(lava_vertex_paths, lava_tc_paths, lava_te_paths, lava_geometry_paths, lava_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
@@ -175,8 +177,10 @@ int main()
     std::vector<const char*> water_vertex_paths{"../shaders/water/vertex.glsl"};
     std::vector<const char*> water_tc_paths{"../shaders/water/tcontrol.glsl"};
     std::vector<const char*> water_te_paths{"../shaders/water/teval.glsl"};
-    std::vector<const char*> water_geometry_paths{"../shaders/water/geometry.glsl"};
-    std::vector<const char*> water_frag_paths{"../shaders/water/fragment.glsl"};
+    std::vector<const char*> water_geometry_paths{"../shaders/utils/ice.glsl",
+                                                  "../shaders/water/geometry.glsl"};
+    std::vector<const char*> water_frag_paths{"../shaders/utils/ice.glsl",
+                                              "../shaders/water/fragment.glsl"};
     Program water_program(water_vertex_paths, water_tc_paths, water_te_paths, water_geometry_paths, water_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
@@ -218,7 +222,7 @@ int main()
                                       {1.0f, 8.0f, 8.0f});
 
     Model screen("../models/screen/screen.obj", GL_TRIANGLES);
-    Model water("../models/water/waterLOD2.obj", GL_PATCHES);
+    Model water("../models/water/waterLOD1.obj", GL_PATCHES);
     Model volcano("../models/volcan/volcan.obj", GL_TRIANGLES);
     Model lava("../models/lava/lava.obj", GL_PATCHES);
     Model cave_lava("../models/cave_lava/cave_lava.obj", GL_PATCHES);

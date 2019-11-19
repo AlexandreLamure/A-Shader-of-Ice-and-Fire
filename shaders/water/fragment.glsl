@@ -69,6 +69,11 @@ uniform int rand;
 uniform float wave_speed;
 
 
+// from ice.glsl
+float get_ice_state(vec4 position, float total_time, float wave_speed);
+float get_ice_wave(float ice_state);
+
+
 vec3 compute_dir_light(DirLight light, Material material, vec3 normal, vec3 camera_dir)
 {
     vec3 light_dir = normalize(-light.dir);
@@ -123,7 +128,7 @@ vec3 compute_lights(Material material, vec3 normal)
     return light_color;
 }
 
-vec4 compute_water_texture(vec2 distortion)
+vec4 compute_water_texture(vec2 distortion, float ice_state)
 {
     // Compute Texture coordinates
     vec2 ndc = (fs_in.clip_space.xy / fs_in.clip_space.w) / 2.f + 0.5f;
@@ -145,7 +150,8 @@ vec4 compute_water_texture(vec2 distortion)
     fresnel_coef = pow(fresnel_coef, 1.8);
 
     // Combine reflect & refract
-    return mix(reflect, refract, fresnel_coef);
+    float coef = clamp(fresnel_coef - clamp(ice_state, 0, 0.2), 0, 1);
+    return mix(reflect, refract, coef);
 }
 
 
@@ -153,15 +159,19 @@ void main()
 {
     output_color = vec4(1);
 
+
+    float ice_state = get_ice_state(fs_in.pos, total_time, wave_speed);
+    float new_wave_speed = wave_speed * get_ice_wave(ice_state);
+
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
 
     // Add distortion to texture coordinates
     const float wave_strength = 0.02;
-    vec2 distorted_tex_coords = vec2(fs_in.tex_coords.x + wave_speed, fs_in.tex_coords.y);
+    vec2 distorted_tex_coords = vec2(fs_in.tex_coords.x + new_wave_speed, fs_in.tex_coords.y);
     distorted_tex_coords = texture(texture_diffuse1, distorted_tex_coords).rg * 0.1;
     distorted_tex_coords = fs_in.tex_coords + distorted_tex_coords;
-    distorted_tex_coords.y += wave_speed;
+    distorted_tex_coords.y += new_wave_speed;
     vec2 distortion = texture(texture_diffuse1, distorted_tex_coords).rg * 2.0 - 1.0;
     distortion *= wave_strength;
 
@@ -171,7 +181,11 @@ void main()
     //vec3 normal = fs_in.normal; // if no normal map
     vec3 normal = texture(texture_normal1, distorted_tex_coords).rgb;
     normal.z *= 2.8; // to smooth the water surface
-    //normal.z *= cos(total_time * 0.5) * 1 + 0.5;
+
+    // Ice transition
+    if (ice_state * normal.x * normal.y * normal.z > 0.05)
+        normal.z *= clamp(ice_state, 0, 1);
+
     normal = normalize(normal * 2.0 - 1.0);
     normal = normalize(fs_in.TBN * normal);
 
@@ -180,7 +194,7 @@ void main()
 
     Material material;
 
-    vec4 diffuse = compute_water_texture(distortion);
+    vec4 diffuse = compute_water_texture(distortion, ice_state);
     // height map
     //diffuse = vec4(vec3(texture(texture_other2, fs_in.tex_coords).r), 1);
 
@@ -195,7 +209,10 @@ void main()
     /* ------------------------------------------------------- */
 
     // Add blue tint
-    output_color = mix(output_color, vec4(0.0, 0.3, 0.5, 0.8), 0.15);
+    output_color = mix(output_color, vec4(0.0, 0.3, 0.5, 0.8), 0.1);
 
     //output_color = vec4(vec3(texture(texture_other2, fs_in.tex_coords).r), 1);
+
+    // Ice color
+    output_color = mix(output_color, vec4(0.7, 0.9, 1., 0.95), clamp(ice_state, 0, 0.75));
 }

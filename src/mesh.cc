@@ -61,7 +61,7 @@ void Mesh::draw(Program program, std::vector<GLuint>* other_textures)
         else if(name == "texture_normal")
             number = std::to_string(normal_n++);
         program.set_int(name + number, i);
-        std::cout << "Texture " << name + number << ": " << i << " has id " << textures[i].id  << " and path " << textures[i].path << std::endl;
+        //std::cout << "Texture " << name + number << ": " << i << " has id " << textures[i].id  << " and path " << textures[i].path << std::endl;
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
 
@@ -73,7 +73,7 @@ void Mesh::draw(Program program, std::vector<GLuint>* other_textures)
             glActiveTexture(GL_TEXTURE0 + index);
             glBindTexture(GL_TEXTURE_2D, (*other_textures)[i]);
             program.set_int("texture_other" + std::to_string(i), index);
-            std::cout << "Texture_other " << i << ": " << index << std::endl;
+            //std::cout << "Texture_other " << i << ": " << index << std::endl;
         }
     }
 
