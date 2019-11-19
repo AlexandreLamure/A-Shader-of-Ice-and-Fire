@@ -17,6 +17,8 @@
 
 
 Camera camera;
+bool ice_age = false;
+float ice_time = 1.0f;
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -65,6 +67,16 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
         camera.fov = 45.0f;
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    // Toggle Ice transition
+    if (key == GLFW_KEY_I && action == GLFW_PRESS)
+    {
+        ice_age = !ice_age;
+        ice_time = 0.0f;
+    }
+}
+
 
 void process_input(GLFWwindow *window, float delta_time)
 {
@@ -96,8 +108,12 @@ void set_uniforms(Program& program, int window_w, int window_h, float total_time
     program.set_float("total_time", total_time);
     program.set_float("delta_time", delta_time);
     program.set_vec2("resolution", window_w, window_h);
+
     // set random
     program.set_int("rand", std::rand() % 100);
+
+    program.set_bool("ice_age", ice_age);
+    program.set_float("ice_time", ice_time);
 
     // set lights
     for (int i = 0; i < dir_lights.size(); ++i)
@@ -141,6 +157,7 @@ int main()
     GLFWwindow *window = Init::init_all(window_w, window_h);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
+    glfwSetKeyCallback(window, key_callback);
 
 
 
@@ -259,16 +276,6 @@ int main()
                                   {1.0f, 1.0f, 1.0f}, // specular
                                   {1.f, -1.f, -1.f})); // direction
 
-    /*
-    point_lights.push_back(PointLight({0.1f, 0.1f, 0.1f}, // ambient
-                                      {10.0f, 1.0f, 10.0f}, // diffuse
-                                      {10.0f, 1.0f, 10.0f}, // specular
-                                      {-18.0f, 15.f, -8.f})); // position
-    point_lights.push_back(PointLight({0.1f, 0.1f, 0.1f}, // ambient
-                                      {1.0f, 8.0f, 8.0f}, // diffuse
-                                      {1.0f, 8.0f, 8.0f}, // specular
-                                      {26.0f, 25.0f, 10.0f})); // position */
-
 
     // To avoid redeclaration
     std::vector<GLuint> other_textures;
@@ -288,6 +295,7 @@ int main()
         total_time = glfwGetTime();
         delta_time = total_time - last_time;
         last_time = total_time;
+        ice_time += delta_time;
 
         // input
         process_input(window, delta_time);

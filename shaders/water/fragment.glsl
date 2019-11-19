@@ -67,6 +67,7 @@ uniform vec3 camera_pos;
 uniform int mesh_id;
 uniform int rand;
 uniform float wave_speed;
+uniform bool ice_age;
 
 
 // from ice.glsl
@@ -182,7 +183,6 @@ void main()
     vec3 normal = texture(texture_normal1, distorted_tex_coords).rgb;
     normal.z *= 2.8; // to smooth the water surface
 
-    // Ice transition
     if (ice_state * normal.x * normal.y * normal.z > 0.05)
         normal.z *= clamp(ice_state, 0, 1);
 
