@@ -123,8 +123,9 @@ int main()
 {
     // window variables
     // alex 1840 1020
-    int window_w = 1000;
-    int window_h = 700;
+    // tibo 1000 700
+    int window_w = 1840;
+    int window_h = 1020;
 
     // water constant
     constexpr float water_h = 7.0f; // FIXME: get this from obj
@@ -209,7 +210,7 @@ int main()
     Model water("../models/water/waterLOD1.obj", GL_PATCHES);
     Model volcano("../models/volcan/volcan.obj", GL_TRIANGLES);
     Model lava("../models/lava/lava.obj", GL_PATCHES);
-    Model lamp1("../models/lamp1/lamp1.obj", GL_TRIANGLES);
+    Model lamp1("../new_models/lamp1/lamp1.obj", GL_TRIANGLES);
     LightModel light1("../new_models/light1/light1.obj", GL_TRIANGLES, li);
 
     model_lights.push_back(light1);
@@ -301,7 +302,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(lava_program.program_id);
         // set uniforms
-        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, 1, 0, -water_h});
+        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h});
         lava_program.set_mat4("model", model_mat);
         // Draw
         lava.draw(lava_program, nullptr);
@@ -357,7 +358,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(lava_program.program_id);
         // set uniforms
-        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0, -1, 0, water_h});
+        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, -1, 0, water_h});
         lava_program.set_mat4("model", model_mat);
         // Draw
         lava.draw(lava_program, nullptr);
@@ -394,7 +395,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(lava_program.program_id);
         // set uniforms
-        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, {0,0,0,0});
+        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0,0,0,0});
         lava_program.set_mat4("model", model_mat);
         // Draw
         lava.draw(lava_program, nullptr);

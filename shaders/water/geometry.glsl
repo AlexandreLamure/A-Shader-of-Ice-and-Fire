@@ -37,7 +37,6 @@ vec3 compute_decay(vec2 tex_coords, mat3 TBN)
     distorted_tex_coords.y += wave_speed;
 
     vec3 normal_distor = texture(texture_normal1, distorted_tex_coords).rgb;
-    normal_distor *= 0.5;
     normal_distor = normalize(normal_distor * 2.0 - 1.0);
     normal_distor = normalize(TBN * normal_distor);
 
@@ -55,7 +54,7 @@ void set_out(int index)
     gl_ClipDistance[0] = gl_in[index].gl_ClipDistance[0];
 
     vec3 decay = compute_decay(gs_in[index].tex_coords, gs_in[index].TBN);
-    const float decay_strength = 1.1;
+    const float decay_strength = 0.7;
     float d = (decay.x + decay.z) * decay_strength;
     gl_Position.y += d;
     gs_out.pos.y += d;
