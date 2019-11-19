@@ -109,9 +109,6 @@ void set_uniforms(Program& program, int window_w, int window_h, float total_time
     program.set_float("delta_time", delta_time);
     program.set_vec2("resolution", window_w, window_h);
 
-    // set random
-    program.set_int("rand", std::rand() % 100);
-
     program.set_bool("ice_age", ice_age);
     program.set_float("ice_time", ice_time);
 
@@ -151,8 +148,6 @@ int main()
     float delta_time = 0.f;
     float last_time = 0.f;
 
-    // random
-    std::srand(std::time(nullptr));
 
     GLFWwindow *window = Init::init_all(window_w, window_h);
     glfwSetCursorPosCallback(window, mouse_callback);

@@ -1,5 +1,7 @@
 #version 450
 
+uniform float total_time;
+
 // From misc.glsl
 vec3 mod289(vec3 x);
 vec2 mod289(vec2 x);
@@ -10,7 +12,7 @@ float pattern(vec2 st, vec2 v, float t);
 // From simplex.glsl
 float snoise(vec3 v);
 
-float lava_texture(vec3 position, float total_time)
+float lava_texture(vec3 position)
 {
     const float flow_speed = 0.4;
     const float zoom = 1.;
@@ -31,9 +33,9 @@ float lava_texture(vec3 position, float total_time)
     return DF;
 }
 
-vec4 lava_texture_real(vec3 position, float total_time)
+vec4 lava_texture_real(vec3 position)
 {
-    float DF = lava_texture(position, total_time);
+    float DF = lava_texture(position);
 
     // Realistic colors
     float r = smoothstep(.2, 1.75, fract(DF)/cos(DF));
@@ -45,9 +47,9 @@ vec4 lava_texture_real(vec3 position, float total_time)
     return vec4(1.0-color, 1.0);
 }
 
-vec4 lava_texture_mix(vec3 position, float total_time)
+vec4 lava_texture_mix(vec3 position)
 {
-    float DF = lava_texture(position, total_time);
+    float DF = lava_texture(position);
 
     // Realistic colors
     float r1 = smoothstep(.2, 1.75, fract(DF)/cos(DF));

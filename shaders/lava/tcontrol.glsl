@@ -17,12 +17,6 @@ out TCS_OUT
     vec3 normal;
     vec2 tex_coords;
 } tcs_out[];
-in TCS_OUT
-{
-    vec4 pos;
-    vec3 normal;
-    vec2 tex_coords;
-} tes_in[];
 
 
 void main(void)

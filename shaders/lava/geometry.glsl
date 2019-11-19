@@ -3,12 +3,6 @@
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 3) out;
 
-uniform sampler2D texture_diffuse1;
-uniform sampler2D texture_normal1;
-uniform float wave_speed;
-uniform float total_time;
-uniform int mesh_id;
-
 in TES_OUT
 {
     vec4 pos;
@@ -25,11 +19,19 @@ out GS_OUT
     vec4 clip_space;
 } gs_out;
 
+
+uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_normal1;
+
+uniform float wave_speed;
+uniform float total_time;
+
+
 // from lava_texture.glsl
-vec4 lava_texture_real(vec3 position, float total_time);
+vec4 lava_texture_real(vec3 position);
 
 // from ice.glsl
-float get_ice_state(vec4 position, float total_time, float wave_speed);
+float get_ice_state(vec4 position);
 float get_ice_wave(float ice_state);
 
 
@@ -43,11 +45,11 @@ void set_out(int index)
     gl_ClipDistance[0] = gl_in[index].gl_ClipDistance[0];
 
     // Compute decay
-    vec4 tex = lava_texture_real(gs_in[index].pos.xyz, total_time);
+    vec4 tex = lava_texture_real(gs_in[index].pos.xyz);
     float d = (tex.r + tex.g + tex.b) * 0.15;
     // Ice transition
     const float transition_speed = 4;
-    d = mix(d, 0, clamp(get_ice_state(gs_in[index].pos, total_time, wave_speed) * transition_speed, 0, 1));
+    d = mix(d, 0, clamp(get_ice_state(gs_in[index].pos) * transition_speed, 0, 1));
     // Apply decay
     gl_Position.y += d;
     gs_out.pos.y += d;

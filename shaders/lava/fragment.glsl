@@ -10,35 +10,25 @@ in GS_OUT
 
 out vec4 output_color;
 
-#define PI 3.141592
-
 uniform float total_time;
 uniform vec3 camera_pos;
 uniform float wave_speed;
 
 // from lava_texture.glsl
-vec4 lava_texture_mix(vec3 position, float total_time);
+vec4 lava_texture_mix(vec3 position);
 
 // from ice.glsl
-float get_ice_state(vec4 position, float total_time, float wave_speed);
+float get_ice_state(vec4 position);
 float get_ice_wave(float ice_state);
 
 
 void main()
 {
-    output_color = vec4(1);
+    vec3 normal = fs_in.normal; // no normal map
 
-    /* ------------------------------------------------------- */
-    /* ------------------------------------------------------- */
+    output_color = lava_texture_mix(fs_in.pos.xyz);
 
-    vec3 normal = fs_in.normal; // if no normal map
-
-    /* ------------------------------------------------------- */
-    /* ------------------------------------------------------- */
-
-    output_color = lava_texture_mix(fs_in.pos.xyz, total_time);
-
-    // Ice color
+    // Ice Age color
     const float transition_speed = 4;
-    output_color = mix(output_color, vec4(0, 0, 0, 1), clamp(get_ice_state(fs_in.pos, total_time, wave_speed) * transition_speed, 0, 1));
+    output_color = mix(output_color, vec4(0, 0, 0, 1), clamp(get_ice_state(fs_in.pos) * transition_speed, 0, 1));
 }

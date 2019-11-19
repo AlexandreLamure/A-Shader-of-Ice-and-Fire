@@ -2,8 +2,10 @@
 
 uniform bool ice_age;
 uniform float ice_time;
+uniform float wave_speed;
+uniform float total_time;
 
-float get_ice_state(vec4 position, float total_time, float wave_speed)
+float get_ice_state(vec4 position)
 {
     const float transition_speed = 0.1;
     const float water_width = 45;

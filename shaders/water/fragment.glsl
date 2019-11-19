@@ -60,18 +60,13 @@ uniform sampler2D texture_other0; // Reflection texture
 uniform sampler2D texture_other1; // Refraction texture
 uniform sampler2D texture_other2; // Refraction depth texture
 
-
 uniform float total_time;
-uniform vec2 resolution;
 uniform vec3 camera_pos;
-uniform int mesh_id;
-uniform int rand;
 uniform float wave_speed;
-uniform bool ice_age;
 
 
 // from ice.glsl
-float get_ice_state(vec4 position, float total_time, float wave_speed);
+float get_ice_state(vec4 position);
 float get_ice_wave(float ice_state);
 
 
@@ -151,17 +146,14 @@ vec4 compute_water_texture(vec2 distortion, float ice_state)
     fresnel_coef = pow(fresnel_coef, 1.8);
 
     // Combine reflect & refract
-    float coef = clamp(fresnel_coef - clamp(ice_state, 0, 0.2), 0, 1);
+    float coef = clamp(fresnel_coef - clamp(ice_state, 0, 0.2), 0, 1); // Increase reflection when Ice Age
     return mix(reflect, refract, coef);
 }
 
 
 void main()
 {
-    output_color = vec4(1);
-
-
-    float ice_state = get_ice_state(fs_in.pos, total_time, wave_speed);
+    float ice_state = get_ice_state(fs_in.pos);
     float new_wave_speed = wave_speed * get_ice_wave(ice_state);
 
     /* ------------------------------------------------------- */
@@ -183,6 +175,7 @@ void main()
     vec3 normal = texture(texture_normal1, distorted_tex_coords).rgb;
     normal.z *= 2.8; // to smooth the water surface
 
+    // Ice transition
     if (ice_state * normal.x * normal.y * normal.z > 0.05)
         normal.z *= clamp(ice_state, 0, 1);
 
@@ -203,7 +196,7 @@ void main()
     material.specular = vec3(diffuse); // * 2
     material.shininess = 20; //FIXME: get value from assimp
 
-    output_color *= vec4(compute_lights(material, normal), diffuse.a);
+    output_color = vec4(compute_lights(material, normal), diffuse.a);
 
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
@@ -213,6 +206,6 @@ void main()
 
     //output_color = vec4(vec3(texture(texture_other2, fs_in.tex_coords).r), 1);
 
-    // Ice color
+    // Ice Age color
     output_color = mix(output_color, vec4(0.7, 0.9, 1., 0.95), clamp(ice_state, 0, 0.75));
 }

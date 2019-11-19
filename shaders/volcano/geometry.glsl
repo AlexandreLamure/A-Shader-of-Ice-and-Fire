@@ -11,8 +11,6 @@ in VS_OUT
     mat3 TBN;
 } gs_in[];
 
-
-
 out GS_OUT
 {
     vec4 pos;

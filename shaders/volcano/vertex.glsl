@@ -19,9 +19,7 @@ out VS_OUT
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform int mesh_id;
 uniform float total_time;
-uniform int rand;
 
 uniform vec4 clip_plane;
 
@@ -40,6 +38,9 @@ void main()
     vec3 N = normalize(vec3(model * vec4(normal, 0.0)));
     T = normalize(T - dot(T, N) * N);
     vs_out.TBN = mat3(T, B, N);
+
+    /* ------------------------------------------------------- */
+    /* ------------------------------------------------------- */
 
     gl_ClipDistance[0] = dot(vs_out.pos, clip_plane); // FIXME: use model matrix to modify clip_plane
     gl_Position = projection * view * vs_out.pos;

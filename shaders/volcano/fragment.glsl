@@ -57,10 +57,7 @@ uniform sampler2D texture_specular1;
 uniform sampler2D texture_normal1;
 
 uniform float total_time;
-
 uniform vec3 camera_pos;
-uniform int mesh_id;
-uniform int rand;
 
 
 
@@ -121,11 +118,6 @@ vec3 compute_lights(Material material, vec3 normal)
 
 void main()
 {
-    output_color = vec4(1);
-
-    /* ------------------------------------------------------- */
-    /* ------------------------------------------------------- */
-
     vec3 normal = fs_in.normal; // if no normal map
     /*vec3 normal = texture(texture_normal1, fs_in.tex_coords).rgb;
     normal = normalize(normal * 2.0 - 1.0);
@@ -141,5 +133,5 @@ void main()
     material.specular = vec3(texture(texture_specular1, fs_in.tex_coords));
     material.shininess = 20; //FIXME: get value from assimp
 
-    output_color *= vec4(compute_lights(material, normal), diffuse.a);
+    output_color = vec4(compute_lights(material, normal), diffuse.a);
 }

@@ -5,9 +5,9 @@ layout (triangle_strip, max_vertices = 3) out;
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_normal1;
+
 uniform float wave_speed;
 uniform float total_time;
-uniform int mesh_id;
 
 in TES_OUT
 {
@@ -29,7 +29,7 @@ out GS_OUT
 
 
 // from ice.glsl
-float get_ice_state(vec4 position, float total_time, float wave_speed);
+float get_ice_state(vec4 position);
 float get_ice_wave(float ice_state);
 
 
@@ -59,7 +59,7 @@ void set_out(int index)
     gl_Position = gl_in[index].gl_Position;
     gl_ClipDistance[0] = gl_in[index].gl_ClipDistance[0];
 
-    float new_wave_speed = wave_speed * get_ice_wave(get_ice_state(gs_in[index].pos, total_time, wave_speed));
+    float new_wave_speed = wave_speed * get_ice_wave(get_ice_state(gs_in[index].pos));
     vec3 decay = compute_decay(gs_in[index].tex_coords, gs_in[index].TBN, new_wave_speed);
     const float decay_strength = 0.7;
     float d = (decay.x + decay.z) * decay_strength;
