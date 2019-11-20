@@ -12,7 +12,6 @@ out vec4 output_color;
 
 uniform float total_time;
 uniform vec3 camera_pos;
-uniform float wave_speed;
 
 // from lava_texture.glsl
 vec4 lava_texture_mix(vec3 position);

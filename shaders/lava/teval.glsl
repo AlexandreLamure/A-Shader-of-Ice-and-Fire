@@ -26,21 +26,21 @@ uniform vec4 clip_plane;
 void main()
 {
     gl_Position = gl_in[0].gl_Position * gl_TessCoord.x
-    + gl_in[1].gl_Position * gl_TessCoord.y
-    + gl_in[2].gl_Position * gl_TessCoord.z;
+                + gl_in[1].gl_Position * gl_TessCoord.y
+                + gl_in[2].gl_Position * gl_TessCoord.z;
     gl_Position = projection * view * model * gl_Position;
 
     vec4 position = tes_in[0].pos * gl_TessCoord.x
-    + tes_in[1].pos * gl_TessCoord.y
-    + tes_in[2].pos * gl_TessCoord.z;
+                    + tes_in[1].pos * gl_TessCoord.y
+                    + tes_in[2].pos * gl_TessCoord.z;
 
     vec3 normal = tes_in[0].normal * gl_TessCoord.x
-    + tes_in[1].normal * gl_TessCoord.y
-    + tes_in[2].normal * gl_TessCoord.z;
+                + tes_in[1].normal * gl_TessCoord.y
+                + tes_in[2].normal * gl_TessCoord.z;
 
     vec2 tex_coords = tes_in[0].tex_coords * gl_TessCoord.x
-    + tes_in[1].tex_coords * gl_TessCoord.y
-    + tes_in[2].tex_coords * gl_TessCoord.z;
+                    + tes_in[1].tex_coords * gl_TessCoord.y
+                    + tes_in[2].tex_coords * gl_TessCoord.z;
 
 
     tes_out.pos = model * position;

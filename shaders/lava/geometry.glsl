@@ -23,7 +23,6 @@ out GS_OUT
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_normal1;
 
-uniform float wave_speed;
 uniform float total_time;
 
 
