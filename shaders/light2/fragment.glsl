@@ -32,19 +32,19 @@ struct PointLight
 };
 
 
+
 in GS_OUT
 {
     vec4 pos;
     vec3 normal;
     vec2 tex_coords;
     mat3 TBN;
-    vec4 clip_space;
 } fs_in;
 
 out vec4 output_color;
 
 
-#define NB_DIR_LIGHTS 2
+#define NB_DIR_LIGHTS 1
 #define NB_POINT_LIGHTS 2
 
 uniform DirLight dir_lights[NB_DIR_LIGHTS];
@@ -52,21 +52,18 @@ uniform PointLight point_lights[NB_POINT_LIGHTS];
 
 
 uniform sampler2D texture_ambient1;
-uniform sampler2D texture_diffuse1; // DuDv Map
+uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 uniform sampler2D texture_normal1;
 
-uniform sampler2D texture_other0; // Reflection texture
-uniform sampler2D texture_other1; // Refraction texture
-uniform sampler2D texture_other2; // Refraction depth texture
-
-
 uniform float total_time;
-uniform vec2 resolution;
+
 uniform vec3 camera_pos;
 uniform int mesh_id;
 uniform int rand;
-uniform float wave_speed;
+
+uniform vec3 lightColor;
+
 
 
 vec3 compute_dir_light(DirLight light, Material material, vec3 normal, vec3 camera_dir)
@@ -123,79 +120,35 @@ vec3 compute_lights(Material material, vec3 normal)
     return light_color;
 }
 
-vec4 compute_water_texture(vec2 distortion)
-{
-    // Compute Texture coordinates
-    vec2 ndc = (fs_in.clip_space.xy / fs_in.clip_space.w) / 2.f + 0.5f;
-    vec2 reflect_tex_coords = vec2(ndc.x, -ndc.y);
-    vec2 refract_tex_coords = ndc;
-
-    // Add distortion and clamp
-    reflect_tex_coords.x = clamp(reflect_tex_coords.x + distortion.x, 0.001f, 0.999f);
-    reflect_tex_coords.y = clamp(reflect_tex_coords.y + distortion.y, -0.999f, -0.001f);
-    refract_tex_coords = clamp(refract_tex_coords + distortion, 0.001f, 0.999f);
-
-    // Get texture color
-    vec4 reflect = texture(texture_other0, reflect_tex_coords);
-    vec4 refract = texture(texture_other1, refract_tex_coords);
-
-    // Fresnel
-    vec3 camera_dir = normalize(camera_pos - fs_in.pos.xyz);
-    float fresnel_coef = dot(camera_dir, vec3(0,1,0));
-    fresnel_coef = pow(fresnel_coef, 1.8);
-
-    // Combine reflect & refract
-    return mix(reflect, refract, fresnel_coef);
-}
-
 
 void main()
 {
-    output_color = vec4(1);
+    output_color = vec4(1,0,0,1);
 
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
 
-    // Add distortion to texture coordinates
-    const float wave_strength = 0.02;
-    vec2 distorted_tex_coords = vec2(fs_in.tex_coords.x + wave_speed, fs_in.tex_coords.y);
-    distorted_tex_coords = texture(texture_diffuse1, distorted_tex_coords).rg * 0.1;
-    distorted_tex_coords = fs_in.tex_coords + distorted_tex_coords;
-    distorted_tex_coords.y += wave_speed;
-    vec2 distortion = texture(texture_diffuse1, distorted_tex_coords).rg * 2.0 - 1.0;
-    distortion *= wave_strength;
-
-    /* ------------------------------------------------------- */
-    /* ------------------------------------------------------- */
-
-    //vec3 normal = fs_in.normal; // if no normal map
-    vec3 normal = texture(texture_normal1, distorted_tex_coords).rgb;
-    normal *= 0.5;
+    vec3 normal = fs_in.normal; // if no normal map
+    /*vec3 normal = texture(texture_normal1, fs_in.tex_coords).rgb;
     normal = normalize(normal * 2.0 - 1.0);
     normal = normalize(fs_in.TBN * normal);
-
+*/
     /* ------------------------------------------------------- */
     /* ------------------------------------------------------- */
 
     Material material;
-
-    vec4 diffuse = compute_water_texture(distortion);
-    // height map
-    //diffuse = vec4(vec3(texture(texture_other2, fs_in.tex_coords).r), 1);
-
-    material.ambient = vec3(diffuse);
+    vec4 diffuse = texture(texture_diffuse1, fs_in.tex_coords);
+    material.ambient = vec3(texture(texture_ambient1, fs_in.tex_coords));
     material.diffuse = vec3(diffuse);
-    material.specular = vec3(diffuse); // * 2
+    material.specular = vec3(texture(texture_specular1, fs_in.tex_coords));
     material.shininess = 20; //FIXME: get value from assimp
 
-    output_color *= vec4(compute_lights(material, normal), diffuse.a);
 
-    /* ------------------------------------------------------- */
-    /* ------------------------------------------------------- */
-
-    // Add blue tint
-    output_color = mix(output_color, vec4(0.0, 0.3, 0.5, 0.8), 0.15);
-
-
-    //output_color = vec4(vec3(texture(texture_other2, fs_in.tex_coords).r), 1);
+    output_color = vec4(lightColor, 1.0);
+    /*
+    float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0)
+    BrightColor = vec4(FragColor.rgb, 1.0);
+    else
+    BrightColor = vec4(0.0, 0.0, 0.0, 1.0); */
 }
