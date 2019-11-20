@@ -123,6 +123,7 @@ int main()
 {
     // window variables
     // alex 1840 1020
+    // tibo 1000 700
     int window_w = 1000;
     int window_h = 700;
 
@@ -151,6 +152,22 @@ int main()
     std::vector<const char*> frag_paths{"../shaders/utils/simplex.glsl",
                                         "../shaders/volcano/fragment.glsl"};
     Program volcano_program(vertex_paths, tc_paths, te_paths, geometry_paths, frag_paths);
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+    // VOLCANO PROGRAM -------------------------------------------------------------------------------------------------
+    std::vector<const char*> lava_vertex_paths{"../shaders/lava/vertex.glsl"};
+    std::vector<const char*> lava_tc_paths{"../shaders/lava/tcontrol.glsl"};
+    std::vector<const char*> lava_te_paths{"../shaders/lava/teval.glsl"};
+    std::vector<const char*> lava_geometry_paths{"../shaders/utils/misc.glsl",
+                                                 "../shaders/utils/simplex.glsl",
+                                                 "../shaders/utils/lava_texture.glsl",
+                                                 "../shaders/lava/geometry.glsl"};
+    std::vector<const char*> lava_frag_paths{"../shaders/utils/misc.glsl",
+                                             "../shaders/utils/simplex.glsl",
+                                             "../shaders/utils/lava_texture.glsl",
+                                             "../shaders/lava/fragment.glsl"};
+    Program lava_program(lava_vertex_paths, lava_tc_paths, lava_te_paths, lava_geometry_paths, lava_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
 
@@ -202,7 +219,9 @@ int main()
 
     Model screen("../models/screen/screen.obj", GL_TRIANGLES);
     Model water("../models/water/waterLOD2.obj", GL_PATCHES);
-    Model volcan_wc("../models/volcan/volcan.obj", GL_TRIANGLES);
+    Model volcano("../models/volcan/volcan.obj", GL_TRIANGLES);
+    Model lava("../models/lava/lava.obj", GL_PATCHES);
+    Model cave_lava("../models/cave_lava/cave_lava.obj", GL_PATCHES);
     Model lamp1("../models/lamps/lamp1/lamp.obj", GL_TRIANGLES);
     Model lamp2("../models/lamps/lamp2/lamp.obj", GL_TRIANGLES);
     LightModel light1("../models/lamps/lamp1/light.obj", GL_TRIANGLES, li);
@@ -284,7 +303,7 @@ int main()
         camera.pos.y -= distance;
         camera.invert_pitch();
 
-        // VOLCANO WITH LAVA -------------------------------------------------------------------------------------------
+        // VOLCANO -----------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
@@ -292,10 +311,24 @@ int main()
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h});
         volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wc.draw(volcano_program, nullptr);
+        volcano.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
+
+        // LAVA --------------------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glUseProgram(lava_program.program_id);
+        // set uniforms
+        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h});
+        lava_program.set_mat4("model", model_mat);
+        // Draw
+        lava.draw(lava_program, nullptr);
+        cave_lava.draw(lava_program, nullptr);
+        // -------------------------------------------------------------------------------------------------------------
+
+
 
         // LIGHTS -------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
@@ -337,6 +370,8 @@ int main()
 
 
 
+
+
         // =============================================================================================================
         // REFRACTION --------------------------------------------------------------------------------------------------
         // =============================================================================================================
@@ -344,7 +379,7 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // VOLCANO WITH LAVA -------------------------------------------------------------------------------------------
+        // VOLCANO -----------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
@@ -352,10 +387,23 @@ int main()
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, -1, 0, water_h});
         volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wc.draw(volcano_program, nullptr);
+        volcano.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
+
+        // LAVA --------------------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glUseProgram(lava_program.program_id);
+        // set uniforms
+        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, -1, 0, water_h});
+        lava_program.set_mat4("model", model_mat);
+        // Draw
+        lava.draw(lava_program, nullptr);
+        cave_lava.draw(lava_program, nullptr);
+        // -------------------------------------------------------------------------------------------------------------
+
 
 
 
@@ -369,7 +417,7 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // VOLCANO WITH LAVA -------------------------------------------------------------------------------------------
+        // VOLCANO -----------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
@@ -377,10 +425,23 @@ int main()
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0,0,0,0});
         volcano_program.set_mat4("model", model_mat);
         // Draw
-        volcan_wc.draw(volcano_program, nullptr);
+        volcano.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
+
+        // LAVA --------------------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glUseProgram(lava_program.program_id);
+        // set uniforms
+        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0,0,0,0});
+        lava_program.set_mat4("model", model_mat);
+        // Draw
+        lava.draw(lava_program, nullptr);
+        cave_lava.draw(lava_program, nullptr);
+        // -------------------------------------------------------------------------------------------------------------
+
 
         // LIGHTS -------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
@@ -396,8 +457,6 @@ int main()
         light_program.set_vec3("lightColor", {1.0f, 8.0f, 8.0f});
         light2.draw(light_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
-
-
 
 
         // WATER -------------------------------------------------------------------------------------------------------

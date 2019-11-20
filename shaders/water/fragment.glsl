@@ -170,7 +170,8 @@ void main()
 
     //vec3 normal = fs_in.normal; // if no normal map
     vec3 normal = texture(texture_normal1, distorted_tex_coords).rgb;
-    normal *= 0.5;
+    normal.z *= 2.8; // to smooth the water surface
+    //normal.z *= cos(total_time * 0.5) * 1 + 0.5;
     normal = normalize(normal * 2.0 - 1.0);
     normal = normalize(fs_in.TBN * normal);
 
@@ -195,7 +196,6 @@ void main()
 
     // Add blue tint
     output_color = mix(output_color, vec4(0.0, 0.3, 0.5, 0.8), 0.15);
-
 
     //output_color = vec4(vec3(texture(texture_other2, fs_in.tex_coords).r), 1);
 }
