@@ -174,6 +174,15 @@ int main()
     // -----------------------------------------------------------------------------------------------------------------
 
 
+    // LIGHT PROGRAM --------------------------------------------------------------------------------------------------
+    std::vector<const char*> light_vertex_paths{"../shaders/light2/vertex.glsl"};
+    std::vector<const char*> light_tc_paths{};
+    std::vector<const char*> light_te_paths{};
+    std::vector<const char*> light_geometry_paths{"../shaders/light2/geometry.glsl"};
+    std::vector<const char*> light_frag_paths{"../shaders/light2/fragment.glsl"};
+    Program light_program(light_vertex_paths, light_tc_paths, light_te_paths, light_geometry_paths, light_frag_paths);
+    // -----------------------------------------------------------------------------------------------------------------
+
     // SCREEN PROGRAM --------------------------------------------------------------------------------------------------
     std::vector<const char*> screen_vertex_paths{"../shaders/screen/vertex.glsl"};
     std::vector<const char*> screen_tc_paths{};
@@ -187,15 +196,20 @@ int main()
     std::vector<LightModel> model_lights;
 
     Light li = Light({0.1f, 0.1f, 0.1f}, {10.0f, 1.0f, 10.0f}, {10.0f, 1.0f, 10.0f});
-
+    Light li2 = Light({0.1f, 0.1f, 0.1f}, // ambient
+                                      {1.0f, 8.0f, 8.0f}, // diffuse
+                                      {1.0f, 8.0f, 8.0f});
 
     Model screen("../models/screen/screen.obj", GL_TRIANGLES);
     Model water("../models/water/waterLOD2.obj", GL_PATCHES);
-    Model volcan_wc("../new_models/volcan_with_sand/volcan_with_sand.obj", GL_TRIANGLES);
-    Model lamp1("../new_models/lamp1/lamp1.obj", GL_TRIANGLES);
-    LightModel light1("../new_models/light1/light1.obj", GL_TRIANGLES, li);
+    Model volcan_wc("../models/volcan/volcan.obj", GL_TRIANGLES);
+    Model lamp1("../models/lamps/lamp1/lamp.obj", GL_TRIANGLES);
+    Model lamp2("../models/lamps/lamp2/lamp.obj", GL_TRIANGLES);
+    LightModel light1("../models/lamps/lamp1/light.obj", GL_TRIANGLES, li);
+    LightModel light2("../models/lamps/lamp2/light.obj", GL_TRIANGLES, li2);
 
     model_lights.push_back(light1);
+    model_lights.push_back(light2);
 
     Cubemap cubemap = Cubemap();
 
@@ -209,6 +223,10 @@ int main()
     // Create Lights
     std::vector<DirLight> dir_lights;
     //std::vector<PointLight> point_lights;
+    /*dir_lights.push_back(DirLight({0.f, 0.f, 0.f}, // ambient
+                                  {0.f, 0.f, 0.f}, // diffuse
+                                  {0.f, 0.f, 0.f}, // specular
+                                  {-1.f, -1.f, -1.f})); // direction*/
     dir_lights.push_back(DirLight({0.1f, 0.1f, 0.1f}, // ambient
                                   {1.0f, 1.0f, 1.0f}, // diffuse
                                   {1.0f, 1.0f, 1.0f}, // specular
@@ -276,19 +294,36 @@ int main()
         // Draw
         volcan_wc.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
-        light1.draw(volcano_program, nullptr);
+        lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
+
+        // LIGHTS -------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glUseProgram(light_program.program_id);
+        // set uniforms
+        set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h});
+        light_program.set_mat4("model", model_mat);
+        // Draw
+        // Draw
+        light_program.set_vec3("lightColor", {10.0f, 1.0f, 10.0f});
+        light1.draw(light_program, nullptr);
+        light_program.set_vec3("lightColor", {1.0f, 8.0f, 8.0f});
+        light2.draw(light_program, nullptr);
+        // -------------------------------------------------------------------------------------------------------------
+
 
         // CUBEMAP -----------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glUseProgram(cubemap_program.program_id);
         // set uniforms
+
         glm::mat4 view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
         view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
-        cubemap_program.set_mat4("view", view);
         float window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
         glm::mat4 projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+        cubemap_program.set_mat4("view", view);
         cubemap_program.set_mat4("projection", projection);
         // Draw
         cubemap.draw(cubemap_program);
@@ -319,7 +354,7 @@ int main()
         // Draw
         volcan_wc.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
-        light1.draw(volcano_program, nullptr);
+        lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
 
@@ -344,8 +379,26 @@ int main()
         // Draw
         volcan_wc.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
-        light1.draw(volcano_program, nullptr);
+        lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
+
+        // LIGHTS -------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glUseProgram(light_program.program_id);
+        // set uniforms
+        set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h});
+        light_program.set_mat4("model", model_mat);
+        // Draw
+        // Draw
+        light_program.set_vec3("lightColor", {10.0f, 1.0f, 10.0f});
+        light1.draw(light_program, nullptr);
+        light_program.set_vec3("lightColor", {1.0f, 8.0f, 8.0f});
+        light2.draw(light_program, nullptr);
+        // -------------------------------------------------------------------------------------------------------------
+
+
+
 
         // WATER -------------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
