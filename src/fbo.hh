@@ -7,8 +7,8 @@ class FBO
 {
 public:
     GLuint fbo_id;
-    GLuint color_texture;
+    std::vector<GLuint> color_textures;
     GLuint depth_texture;
 
-    FBO(int width, int height);
+    FBO(int width, int height, int nb_data);
 };

@@ -7,6 +7,8 @@
 #include <ctime>
 #include <tuple>
 
+#include "../lib/irrklang/irrKlang.h"
+
 #include "init.hh"
 #include "program.hh"
 #include "model.hh"
@@ -19,6 +21,8 @@
 Camera camera;
 bool ice_age = false;
 float ice_time = 1.0f;
+
+irrklang::ISoundEngine *SoundEngine = irrklang::createIrrKlangDevice();
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -72,6 +76,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     // Toggle Ice transition
     if (key == GLFW_KEY_I && action == GLFW_PRESS)
     {
+        if (!ice_age)
+            SoundEngine->play2D("../audio/zawarudo.mp3");
+
         ice_age = !ice_age;
         ice_time = 0.0f;
     }
@@ -216,6 +223,27 @@ int main()
     Program light_program(light_vertex_paths, light_tc_paths, light_te_paths, light_geometry_paths, light_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
+
+    // BLOOM PROGRAM --------------------------------------------------------------------------------------------------
+    std::vector<const char*> bloom_vertex_paths{"../shaders/bloom/vertex.glsl"};
+    std::vector<const char*> bloom_tc_paths{};
+    std::vector<const char*> bloom_te_paths{};
+    std::vector<const char*> bloom_geometry_paths{};
+    std::vector<const char*> bloom_frag_paths{"../shaders/bloom/fragment.glsl"};
+    Program bloom_program(bloom_vertex_paths, bloom_tc_paths, bloom_te_paths, bloom_geometry_paths, bloom_frag_paths);
+    // -----------------------------------------------------------------------------------------------------------------
+
+    // BLUR PROGRAM --------------------------------------------------------------------------------------------------
+    std::vector<const char*> blur_vertex_paths{"../shaders/blur/vertex.glsl"};
+    std::vector<const char*> blur_tc_paths{};
+    std::vector<const char*> blur_te_paths{};
+    std::vector<const char*> blur_geometry_paths{};
+    std::vector<const char*> blur_frag_paths{"../shaders/blur/fragment.glsl"};
+    Program blur_program(blur_vertex_paths, blur_tc_paths, blur_te_paths, blur_geometry_paths, blur_frag_paths);
+    // -----------------------------------------------------------------------------------------------------------------
+
+
+
     // SCREEN PROGRAM --------------------------------------------------------------------------------------------------
     std::vector<const char*> screen_vertex_paths{"../shaders/screen/vertex.glsl"};
     std::vector<const char*> screen_tc_paths{};
@@ -234,10 +262,10 @@ int main()
                                       {1.0f, 8.0f, 8.0f});
 
     Model screen("../models/screen/screen.obj", GL_TRIANGLES);
-    Model water("../models/water/waterLOD1.obj", GL_PATCHES);
+    Model water("../models/water/waterLOD0.obj", GL_PATCHES);
     Model volcano("../models/volcan/volcan.obj", GL_TRIANGLES);
-    Model lava("../models/lava/lava.obj", GL_PATCHES);
-    Model cave_lava("../models/cave_lava/cave_lava.obj", GL_PATCHES);
+    //Model lava("../models/lava/lava.obj", GL_PATCHES);
+    //Model cave_lava("../models/cave_lava/cave_lava.obj", GL_PATCHES);
     Model lamp1("../models/lamps/lamp1/lamp.obj", GL_TRIANGLES);
     Model lamp2("../models/lamps/lamp2/lamp.obj", GL_TRIANGLES);
     LightModel light1("../models/lamps/lamp1/light.obj", GL_TRIANGLES, li);
@@ -248,10 +276,14 @@ int main()
 
     Cubemap cubemap = Cubemap();
 
+    FBO reflect_fbo = FBO(window_w, window_h, 1);
+    FBO refract_fbo = FBO(window_w, window_h, 1);
 
-    FBO screen_fbo = FBO(window_w, window_h);
-    FBO reflect_fbo = FBO(window_w, window_h);
-    FBO refract_fbo = FBO(window_w, window_h);
+    FBO bloom_fbo = FBO(window_w, window_h, 2);
+    FBO ping_pong_1 = FBO(window_w, window_h, 1);
+    FBO ping_pong_2 = FBO(window_w, window_h, 1);
+
+    FBO screen_fbo = FBO(window_w, window_h, 1);
 
 
 
@@ -278,6 +310,10 @@ int main()
     glm::mat4 model_mat = glm::mat4(1.f);
     //model_mat = glm::translate(model_mat, glm::vec3(10.f, -25.f, -30.f));
     //model_mat = glm::rotate(model_mat, glm::radians(40.f), glm::vec3(0.f, 1.f, 0.f));
+
+
+    // SOUND
+    //SoundEngine->play2D("../audio/getout.ogg", GL_TRUE);
 
 
     // main loop
@@ -322,7 +358,7 @@ int main()
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
-
+/*
         // LAVA --------------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -335,7 +371,7 @@ int main()
         cave_lava.draw(lava_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-
+*/
 
         // LIGHTS -------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
@@ -398,7 +434,7 @@ int main()
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
-
+/*
         // LAVA --------------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -411,7 +447,7 @@ int main()
         cave_lava.draw(lava_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-
+*/
 
 
 
@@ -436,7 +472,7 @@ int main()
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
-
+/*
         // LAVA --------------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -448,7 +484,7 @@ int main()
         lava.draw(lava_program, nullptr);
         cave_lava.draw(lava_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
-
+*/
 
         // LIGHTS -------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
@@ -478,8 +514,8 @@ int main()
         water_program.set_float("wave_speed", wave_speed);
         water_program.set_mat4("model", model_mat);
         // Draw
-        other_textures = {reflect_fbo.color_texture, refract_fbo.color_texture, refract_fbo.depth_texture};
-        water.draw(water_program, &other_textures);
+        other_textures = {reflect_fbo.color_textures[0], refract_fbo.color_textures[0], refract_fbo.depth_texture};
+        //water.draw(water_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
 
         // CUBEMAP -----------------------------------------------------------------------------------------------------
@@ -487,6 +523,16 @@ int main()
         glDisable(GL_CULL_FACE);
         glUseProgram(cubemap_program.program_id);
         // set uniforms
+
+
+
+        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+        view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
+        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+
+
+
         view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
         view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
         cubemap_program.set_mat4("view", view);
@@ -497,6 +543,74 @@ int main()
         cubemap.draw(cubemap_program);
         // -------------------------------------------------------------------------------------------------------------
 
+
+
+        // BLOOOOOOOMMMMM
+        glBindFramebuffer(GL_FRAMEBUFFER, bloom_fbo.fbo_id);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glUseProgram(bloom_program.program_id);
+
+        // Draw
+
+        other_textures = {screen_fbo.color_textures[0]};
+        screen.draw(bloom_program, &other_textures);
+
+        // =============================================================================================================
+        // BLUR ----------------------------------------------------------------------------------------------
+        // =============================================================================================================
+
+        bool horizontal = true;
+        int amount = 10;
+
+        /*
+        glBindFramebuffer(GL_FRAMEBUFFER, ping_pong_1.fbo_id);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+
+
+        blur_program.set_int("horizontal", horizontal);
+        other_textures = {bloom_fbo.color_textures[1]};
+        screen.draw(blur_program, &other_textures);
+*/
+
+        for (unsigned int i = 0; i < amount; i++)
+        {
+            if (i % 2 == 0)
+                glBindFramebuffer(GL_FRAMEBUFFER, ping_pong_1.fbo_id);
+            else
+                glBindFramebuffer(GL_FRAMEBUFFER, ping_pong_2.fbo_id);
+
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            glDisable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
+
+            glUseProgram(blur_program.program_id);
+
+            blur_program.set_int("horizontal", horizontal);
+
+            if (i == 0)
+                other_textures = {bloom_fbo.color_textures[1]};
+
+            else if (i % 2 == 0)
+                other_textures = {ping_pong_2.color_textures[0]};
+
+            else
+                other_textures = {ping_pong_1.color_textures[0]};
+
+            screen.draw(blur_program, &other_textures);
+
+            // ???
+            //RenderQuad();
+
+            horizontal = !horizontal;
+        }
 
 
 
@@ -516,9 +630,14 @@ int main()
         // set uniforms
         set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0,0,0,0});
         // Draw
-        other_textures = {screen_fbo.color_texture};
+        other_textures = {bloom_fbo.color_textures[0], ping_pong_2.color_textures[0]};
         screen.draw(screen_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
+
+
+
+
+
 
 
 
@@ -528,6 +647,11 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+
+    // SOUND CLEAR
+
+    SoundEngine->drop();
 
 
     // clear all previously allocated GLFW resources.

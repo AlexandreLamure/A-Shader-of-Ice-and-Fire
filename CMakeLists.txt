@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(${BIN}
                lib/glad/src/glad.c
+               lib/irrklang/irrKlang.h
                src/init.cc src/init.hh
                src/mesh.cc src/mesh.hh
                src/program.cc src/program.hh
@@ -35,4 +36,4 @@ find_package(assimp REQUIRED)
 
 include_directories(${OPENGL_INCLUDE_DIRS} ${GLFW_INCLUDE_DIRS})
 
-target_link_libraries(${BIN} ${OPENGL_LIBRARIES} ${GLFW_LIBRARIES} ${GLFW_LIBRARIES_FIX} GLAD ${CMAKE_DL_LIBS} assimp)
+target_link_libraries(${BIN} ${OPENGL_LIBRARIES} ${GLFW_LIBRARIES} ${GLFW_LIBRARIES_FIX} GLAD ${CMAKE_DL_LIBS} assimp /usr/lib/libIrrKlang.so)
