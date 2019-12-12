@@ -9,8 +9,8 @@ float get_ice_state(vec4 position)
 {
     const float transition_speed = 0.1;
     const float water_width = 45;
-    const float decay = 1.5; // to reach the end faster
-    float ice_state = (position.x / water_width + decay) * transition_speed;
+    const float decay = 0.5; // to reach the end faster
+    float ice_state = (position.x / water_width + 1 + decay) * transition_speed;
     if (ice_age)
         return ice_state * (ice_time);
     else
