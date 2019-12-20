@@ -59,7 +59,8 @@ uniform sampler2D texture_normal1;
 uniform float total_time;
 uniform vec3 camera_pos;
 
-
+float get_ice_state(vec4 position);
+float get_ice_wave(float ice_state);
 
 vec3 compute_dir_light(DirLight light, Material material, vec3 normal, vec3 camera_dir)
 {
@@ -107,7 +108,24 @@ vec3 compute_lights(Material material, vec3 normal)
         light_color += compute_dir_light(dir_lights[i], material, normal, camera_dir);
     // Point lights
     for(int i = 0; i < NB_POINT_LIGHTS; i++)
-        light_color += compute_point_light(point_lights[i], material, normal, camera_dir);
+    {
+        const float transition_speed = 4;
+        PointLight tmp_light;
+
+        tmp_light.ambient = mix(point_lights[i].ambient, point_lights[i].ambient, clamp(get_ice_state(fs_in.pos) * transition_speed, 0, 1));
+        tmp_light.diffuse = mix(point_lights[i].diffuse, vec3(1.f, 1.f, 10.f), clamp(get_ice_state(fs_in.pos) * transition_speed, 0, 1));
+        tmp_light.specular= mix(point_lights[i].specular, vec3(1.f, 1.f, 10.f), clamp(get_ice_state(fs_in.pos) * transition_speed, 0, 1));;
+
+        tmp_light.pos = point_lights[i].pos;
+
+        tmp_light.constant = point_lights[i].constant;
+        tmp_light.linear = point_lights[i].linear;
+        tmp_light.quadratic = point_lights[i].quadratic;
+
+
+        light_color += compute_point_light(tmp_light, material, normal, camera_dir);
+
+    }
     // Spot light
     //for(int i = 0; i < NB_SPOT_LIGHTS; i++)
         //light_color += compute_spot_light(spot_lights[i], material, normal, camera_dir);

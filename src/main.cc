@@ -168,7 +168,8 @@ int main()
     std::vector<const char*> tc_paths{};
     std::vector<const char*> te_paths{};
     std::vector<const char*> geometry_paths{"../shaders/volcano/geometry.glsl"};
-    std::vector<const char*> frag_paths{"../shaders/utils/simplex.glsl",
+    std::vector<const char*> frag_paths{"../shaders/utils/ice.glsl",
+                                        "../shaders/utils/simplex.glsl",
                                         "../shaders/volcano/fragment.glsl"};
     Program volcano_program(vertex_paths, tc_paths, te_paths, geometry_paths, frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
@@ -215,11 +216,11 @@ int main()
 
 
     // LIGHT PROGRAM --------------------------------------------------------------------------------------------------
-    std::vector<const char*> light_vertex_paths{"../shaders/light2/vertex.glsl"};
+    std::vector<const char*> light_vertex_paths{"../shaders/light/vertex.glsl"};
     std::vector<const char*> light_tc_paths{};
     std::vector<const char*> light_te_paths{};
-    std::vector<const char*> light_geometry_paths{"../shaders/light2/geometry.glsl"};
-    std::vector<const char*> light_frag_paths{"../shaders/light2/fragment.glsl"};
+    std::vector<const char*> light_geometry_paths{};
+    std::vector<const char*> light_frag_paths{"../shaders/utils/ice.glsl", "../shaders/light/fragment.glsl"};
     Program light_program(light_vertex_paths, light_tc_paths, light_te_paths, light_geometry_paths, light_frag_paths);
     // -----------------------------------------------------------------------------------------------------------------
 
@@ -256,16 +257,16 @@ int main()
 
     std::vector<LightModel> model_lights;
 
-    Light li = Light({0.1f, 0.1f, 0.1f}, {10.0f, 1.0f, 10.0f}, {10.0f, 1.0f, 10.0f});
+    Light li = Light({0.1f, 0.1f, 0.1f}, {15.0f, 1.0f, 1.0f}, {15.0f, 1.0f, 1.0f});
     Light li2 = Light({0.1f, 0.1f, 0.1f}, // ambient
-                                      {1.0f, 8.0f, 8.0f}, // diffuse
-                                      {1.0f, 8.0f, 8.0f});
+                                      {15.0f, 1.0f, 1.0f}, // diffuse
+                                      {15.0f, 1.0f, 1.0f});
 
     Model screen("../models/screen/screen.obj", GL_TRIANGLES);
     Model water("../models/water/waterLOD0.obj", GL_PATCHES);
     Model volcano("../models/volcan/volcan.obj", GL_TRIANGLES);
-    //Model lava("../models/lava/lava.obj", GL_PATCHES);
-    //Model cave_lava("../models/cave_lava/cave_lava.obj", GL_PATCHES);
+    Model lava("../models/lava/lava.obj", GL_PATCHES);
+    Model cave_lava("../models/cave_lava/cave_lava.obj", GL_PATCHES);
     Model lamp1("../models/lamps/lamp1/lamp.obj", GL_TRIANGLES);
     Model lamp2("../models/lamps/lamp2/lamp.obj", GL_TRIANGLES);
     LightModel light1("../models/lamps/lamp1/light.obj", GL_TRIANGLES, li);
@@ -334,7 +335,7 @@ int main()
 
 
 
-
+/*
         // =============================================================================================================
         // REFLECTION --------------------------------------------------------------------------------------------------
         // =============================================================================================================
@@ -358,7 +359,7 @@ int main()
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
-/*
+
         // LAVA --------------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -371,7 +372,7 @@ int main()
         cave_lava.draw(lava_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-*/
+
 
         // LIGHTS -------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
@@ -382,9 +383,9 @@ int main()
         light_program.set_mat4("model", model_mat);
         // Draw
         // Draw
-        light_program.set_vec3("lightColor", {10.0f, 1.0f, 10.0f});
+        light_program.set_vec3("lightColor", {10.0f, 1.0f, 5.0f});
         light1.draw(light_program, nullptr);
-        light_program.set_vec3("lightColor", {1.0f, 8.0f, 8.0f});
+        light_program.set_vec3("lightColor", {10.0f, 1.0f, 5.0f});
         light2.draw(light_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
@@ -434,7 +435,7 @@ int main()
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
-/*
+
         // LAVA --------------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -447,8 +448,8 @@ int main()
         cave_lava.draw(lava_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-*/
 
+*/
 
 
 
@@ -472,7 +473,7 @@ int main()
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
-/*
+
         // LAVA --------------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -484,7 +485,7 @@ int main()
         lava.draw(lava_program, nullptr);
         cave_lava.draw(lava_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
-*/
+
 
         // LIGHTS -------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
@@ -495,13 +496,13 @@ int main()
         light_program.set_mat4("model", model_mat);
         // Draw
         // Draw
-        light_program.set_vec3("lightColor", {10.0f, 1.0f, 10.0f});
+        light_program.set_vec3("lightColor", {10.0f, 1.0f, 5.0f});
         light1.draw(light_program, nullptr);
-        light_program.set_vec3("lightColor", {1.0f, 8.0f, 8.0f});
+        light_program.set_vec3("lightColor", {10.0f, 1.0f, 5.0f});
         light2.draw(light_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-
+/*
         // WATER -------------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
@@ -515,24 +516,25 @@ int main()
         water_program.set_mat4("model", model_mat);
         // Draw
         other_textures = {reflect_fbo.color_textures[0], refract_fbo.color_textures[0], refract_fbo.depth_texture};
-        //water.draw(water_program, &other_textures);
+        water.draw(water_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
-
+*/
         // CUBEMAP -----------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glUseProgram(cubemap_program.program_id);
         // set uniforms
 
-
-
-        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+        glm::mat4 view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
         view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
-        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
-        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+        float window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+        glm::mat4 projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+        cubemap_program.set_mat4("view", view);
+        cubemap_program.set_mat4("projection", projection);
+        // Draw
+        cubemap.draw(cubemap_program);
 
-
-
+/*
         view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
         view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
         cubemap_program.set_mat4("view", view);
@@ -540,7 +542,7 @@ int main()
         projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
         cubemap_program.set_mat4("projection", projection);
         // Draw
-        cubemap.draw(cubemap_program);
+        cubemap.draw(cubemap_program); */
         // -------------------------------------------------------------------------------------------------------------
 
 
