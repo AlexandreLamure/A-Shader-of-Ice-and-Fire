@@ -7,7 +7,7 @@
 #include <ctime>
 #include <tuple>
 
-#include "../lib/irrklang/irrKlang.h"
+#include "../lib/irrKlang/irrKlang.h"
 
 #include "init.hh"
 #include "program.hh"
@@ -77,7 +77,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_I && action == GLFW_PRESS)
     {
         if (!ice_age)
-            SoundEngine->play2D("../audio/zawarudo.mp3");
+            SoundEngine->play2D("../audio/zawarudo.ogg");
 
         ice_age = !ice_age;
         ice_time = 0.0f;
@@ -144,8 +144,8 @@ int main()
     // window variables
     // alex 1840 1020
     // tibo 1000 700
-    int window_w = 1000;
-    int window_h = 700;
+    int window_w = 1840;
+    int window_h = 1020;
 
     // water constant
     constexpr float water_h = 7.0f; // FIXME: get this from obj
@@ -257,10 +257,8 @@ int main()
 
     std::vector<LightModel> model_lights;
 
-    Light li = Light({0.1f, 0.1f, 0.1f}, {15.0f, 1.0f, 1.0f}, {15.0f, 1.0f, 1.0f});
-    Light li2 = Light({0.1f, 0.1f, 0.1f}, // ambient
-                                      {15.0f, 1.0f, 1.0f}, // diffuse
-                                      {15.0f, 1.0f, 1.0f});
+    Light li = Light({0.1f, 0.1f, 0.1f}, {15.0f, 1.0f, 1.0f},  {15.0f, 1.0f, 1.0f});
+    Light li2 = Light({0.1f, 0.1f, 0.1f}, {15.0f, 1.0f, 1.0f}, {15.0f, 1.0f, 1.0f});
 
     Model screen("../models/screen/screen.obj", GL_TRIANGLES);
     Model water("../models/water/waterLOD0.obj", GL_PATCHES);
@@ -290,11 +288,6 @@ int main()
 
     // Create Lights
     std::vector<DirLight> dir_lights;
-    //std::vector<PointLight> point_lights;
-    /*dir_lights.push_back(DirLight({0.f, 0.f, 0.f}, // ambient
-                                  {0.f, 0.f, 0.f}, // diffuse
-                                  {0.f, 0.f, 0.f}, // specular
-                                  {-1.f, -1.f, -1.f})); // direction*/
     dir_lights.push_back(DirLight({0.1f, 0.1f, 0.1f}, // ambient
                                   {1.0f, 1.0f, 1.0f}, // diffuse
                                   {1.0f, 1.0f, 1.0f}, // specular
@@ -335,7 +328,6 @@ int main()
 
 
 
-/*
         // =============================================================================================================
         // REFLECTION --------------------------------------------------------------------------------------------------
         // =============================================================================================================
@@ -352,7 +344,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
         // set uniforms
-        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h});
+        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h+0.5});
         volcano_program.set_mat4("model", model_mat);
         // Draw
         volcano.draw(volcano_program, nullptr);
@@ -365,7 +357,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(lava_program.program_id);
         // set uniforms
-        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h});
+        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h+0.5});
         lava_program.set_mat4("model", model_mat);
         // Draw
         lava.draw(lava_program, nullptr);
@@ -379,7 +371,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(light_program.program_id);
         // set uniforms
-        set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h});
+        set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h+0.5});
         light_program.set_mat4("model", model_mat);
         // Draw
         // Draw
@@ -428,7 +420,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
         // set uniforms
-        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, -1, 0, water_h});
+        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, -1, 0, water_h+1});
         volcano_program.set_mat4("model", model_mat);
         // Draw
         volcano.draw(volcano_program, nullptr);
@@ -449,7 +441,6 @@ int main()
         // -------------------------------------------------------------------------------------------------------------
 
 
-*/
 
 
 
@@ -495,14 +486,12 @@ int main()
         set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0, 1, 0, -water_h});
         light_program.set_mat4("model", model_mat);
         // Draw
-        // Draw
         light_program.set_vec3("lightColor", {10.0f, 1.0f, 5.0f});
         light1.draw(light_program, nullptr);
         light_program.set_vec3("lightColor", {10.0f, 1.0f, 5.0f});
         light2.draw(light_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-/*
         // WATER -------------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
@@ -518,31 +507,21 @@ int main()
         other_textures = {reflect_fbo.color_textures[0], refract_fbo.color_textures[0], refract_fbo.depth_texture};
         water.draw(water_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
-*/
+
         // CUBEMAP -----------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glUseProgram(cubemap_program.program_id);
         // set uniforms
-
-        glm::mat4 view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
         view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
-        float window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
-        glm::mat4 projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
         cubemap_program.set_mat4("view", view);
         cubemap_program.set_mat4("projection", projection);
         // Draw
         cubemap.draw(cubemap_program);
 
-/*
-        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
-        view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
-        cubemap_program.set_mat4("view", view);
-        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
-        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
-        cubemap_program.set_mat4("projection", projection);
-        // Draw
-        cubemap.draw(cubemap_program); */
         // -------------------------------------------------------------------------------------------------------------
 
 
@@ -566,9 +545,9 @@ int main()
         // =============================================================================================================
 
         bool horizontal = true;
-        int amount = 10;
+        int amount = 4;
 
-        /*
+
         glBindFramebuffer(GL_FRAMEBUFFER, ping_pong_1.fbo_id);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -579,7 +558,7 @@ int main()
         blur_program.set_int("horizontal", horizontal);
         other_textures = {bloom_fbo.color_textures[1]};
         screen.draw(blur_program, &other_textures);
-*/
+
 
         for (unsigned int i = 0; i < amount; i++)
         {
@@ -632,7 +611,7 @@ int main()
         // set uniforms
         set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, model_lights, {0,0,0,0});
         // Draw
-        other_textures = {bloom_fbo.color_textures[0], ping_pong_2.color_textures[0]};
+        other_textures = {bloom_fbo.color_textures[0], ping_pong_2.color_textures[0], bloom_fbo.depth_texture};
         screen.draw(screen_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
 
