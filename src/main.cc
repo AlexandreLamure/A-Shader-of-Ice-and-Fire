@@ -16,6 +16,7 @@
 #include "fbo.hh"
 #include "light.hh"
 #include "cubemap.hh"
+#include "paths.hh"
 
 
 Camera camera;
@@ -163,95 +164,15 @@ int main()
 
 
 
-    // VOLCANO PROGRAM -------------------------------------------------------------------------------------------------
-    std::vector<const char*> vertex_paths{"../shaders/volcano/vertex.glsl"};
-    std::vector<const char*> tc_paths{};
-    std::vector<const char*> te_paths{};
-    std::vector<const char*> geometry_paths{"../shaders/volcano/geometry.glsl"};
-    std::vector<const char*> frag_paths{"../shaders/utils/ice.glsl",
-                                        "../shaders/utils/simplex.glsl",
-                                        "../shaders/volcano/fragment.glsl"};
-    Program volcano_program(vertex_paths, tc_paths, te_paths, geometry_paths, frag_paths);
-    // -----------------------------------------------------------------------------------------------------------------
-
-
-    // VOLCANO PROGRAM -------------------------------------------------------------------------------------------------
-    std::vector<const char*> lava_vertex_paths{"../shaders/lava/vertex.glsl"};
-    std::vector<const char*> lava_tc_paths{"../shaders/lava/tcontrol.glsl"};
-    std::vector<const char*> lava_te_paths{"../shaders/lava/teval.glsl"};
-    std::vector<const char*> lava_geometry_paths{"../shaders/utils/misc.glsl",
-                                                 "../shaders/utils/simplex.glsl",
-                                                 "../shaders/utils/lava_texture.glsl",
-                                                 "../shaders/utils/ice.glsl",
-                                                 "../shaders/lava/geometry.glsl"};
-    std::vector<const char*> lava_frag_paths{"../shaders/utils/misc.glsl",
-                                             "../shaders/utils/simplex.glsl",
-                                             "../shaders/utils/lava_texture.glsl",
-                                             "../shaders/utils/ice.glsl",
-                                             "../shaders/lava/fragment.glsl"};
-    Program lava_program(lava_vertex_paths, lava_tc_paths, lava_te_paths, lava_geometry_paths, lava_frag_paths);
-    // -----------------------------------------------------------------------------------------------------------------
-
-
-    // WATER PROGRAM ---------------------------------------------------------------------------------------------------
-    std::vector<const char*> water_vertex_paths{"../shaders/water/vertex.glsl"};
-    std::vector<const char*> water_tc_paths{"../shaders/water/tcontrol.glsl"};
-    std::vector<const char*> water_te_paths{"../shaders/water/teval.glsl"};
-    std::vector<const char*> water_geometry_paths{"../shaders/utils/ice.glsl",
-                                                  "../shaders/water/geometry.glsl"};
-    std::vector<const char*> water_frag_paths{"../shaders/utils/ice.glsl",
-                                              "../shaders/water/fragment.glsl"};
-    Program water_program(water_vertex_paths, water_tc_paths, water_te_paths, water_geometry_paths, water_frag_paths);
-    // -----------------------------------------------------------------------------------------------------------------
-
-
-    // CUBEMAP PROGRAM -------------------------------------------------------------------------------------------------
-    std::vector<const char*> cubemap_vertex_paths{"../shaders/cubemap/vertex.glsl"};
-    std::vector<const char*> cubemap_tc_paths{};
-    std::vector<const char*> cubemap_te_paths{};
-    std::vector<const char*> cubemap_geometry_paths{};
-    std::vector<const char*> cubemap_frag_paths{"../shaders/cubemap/fragment.glsl"};
-    Program cubemap_program(cubemap_vertex_paths, cubemap_tc_paths, cubemap_te_paths, cubemap_geometry_paths, cubemap_frag_paths);
-    // -----------------------------------------------------------------------------------------------------------------
-
-
-    // LIGHT PROGRAM --------------------------------------------------------------------------------------------------
-    std::vector<const char*> light_vertex_paths{"../shaders/light/vertex.glsl"};
-    std::vector<const char*> light_tc_paths{};
-    std::vector<const char*> light_te_paths{};
-    std::vector<const char*> light_geometry_paths{};
-    std::vector<const char*> light_frag_paths{"../shaders/utils/ice.glsl", "../shaders/light/fragment.glsl"};
-    Program light_program(light_vertex_paths, light_tc_paths, light_te_paths, light_geometry_paths, light_frag_paths);
-    // -----------------------------------------------------------------------------------------------------------------
-
-
-    // BLOOM PROGRAM --------------------------------------------------------------------------------------------------
-    std::vector<const char*> bloom_vertex_paths{"../shaders/bloom/vertex.glsl"};
-    std::vector<const char*> bloom_tc_paths{};
-    std::vector<const char*> bloom_te_paths{};
-    std::vector<const char*> bloom_geometry_paths{};
-    std::vector<const char*> bloom_frag_paths{"../shaders/bloom/fragment.glsl"};
-    Program bloom_program(bloom_vertex_paths, bloom_tc_paths, bloom_te_paths, bloom_geometry_paths, bloom_frag_paths);
-    // -----------------------------------------------------------------------------------------------------------------
-
-    // BLUR PROGRAM --------------------------------------------------------------------------------------------------
-    std::vector<const char*> blur_vertex_paths{"../shaders/blur/vertex.glsl"};
-    std::vector<const char*> blur_tc_paths{};
-    std::vector<const char*> blur_te_paths{};
-    std::vector<const char*> blur_geometry_paths{};
-    std::vector<const char*> blur_frag_paths{"../shaders/blur/fragment.glsl"};
-    Program blur_program(blur_vertex_paths, blur_tc_paths, blur_te_paths, blur_geometry_paths, blur_frag_paths);
-    // -----------------------------------------------------------------------------------------------------------------
-
-
-
-    // SCREEN PROGRAM --------------------------------------------------------------------------------------------------
-    std::vector<const char*> screen_vertex_paths{"../shaders/screen/vertex.glsl"};
-    std::vector<const char*> screen_tc_paths{};
-    std::vector<const char*> screen_te_paths{};
-    std::vector<const char*> screen_geometry_paths{};
-    std::vector<const char*> screen_frag_paths{"../shaders/screen/fragment.glsl"};
-    Program screen_program(screen_vertex_paths, screen_tc_paths, screen_te_paths, screen_geometry_paths, screen_frag_paths);
+    // LOAD PROGRAMS ---------------------------------------------------------------------------------------------------
+    Program volcano_program(PATHS::volcano_vertex, PATHS::volcano_tc, PATHS::volcano_te, PATHS::volcano_geometry, PATHS::volcano_frag);
+    Program lava_program(PATHS::lava_vertex, PATHS::lava_tc, PATHS::lava_te, PATHS::lava_geometry, PATHS::lava_frag);
+    Program water_program(PATHS::water_vertex, PATHS::water_tc, PATHS::water_te, PATHS::water_geometry, PATHS::water_frag);
+    Program cubemap_program(PATHS::cubemap_vertex, PATHS::cubemap_tc, PATHS::cubemap_te, PATHS::cubemap_geometry, PATHS::cubemap_frag);
+    Program light_program(PATHS::light_vertex, PATHS::light_tc, PATHS::light_te, PATHS::light_geometry, PATHS::light_frag);
+    Program bloom_program(PATHS::bloom_vertex, PATHS::bloom_tc, PATHS::bloom_te, PATHS::bloom_geometry, PATHS::bloom_frag);
+    Program blur_program(PATHS::blur_vertex, PATHS::blur_tc, PATHS::blur_te, PATHS::blur_geometry, PATHS::blur_frag);
+    Program screen_program(PATHS::screen_vertex, PATHS::screen_tc, PATHS::screen_te, PATHS::screen_geometry, PATHS::screen_frag);
     // -----------------------------------------------------------------------------------------------------------------
 
 
