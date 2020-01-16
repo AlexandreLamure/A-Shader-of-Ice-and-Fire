@@ -59,10 +59,10 @@ vec4 lava_texture_mix(vec3 position)
     float r2 = step(0.99, fract(DF)/cos(DF));
     float g2 = step(0.35, fract(DF));
     float b2 = step(0.22, fract(DF));
-
-    float r = mix(r1, r2, 0.5);
-    float g = mix(g1, g2, 0.3);
-    float b = mix(b1, b2, 0.9);
+    // Blend & clamp
+    float r = clamp(mix(r1, r2, 0.5), 0, 1);
+    float g = clamp(mix(g1, g2, 0.3), 0, 1);
+    float b = clamp(mix(b1, b2, 0.9), 0, 1);
 
     vec3 color = vec3(r, g, b);
 
