@@ -68,6 +68,7 @@ uniform float wave_speed;
 // from ice.glsl
 float get_ice_state(vec4 position);
 float get_ice_wave(float ice_state);
+PointLight ice_point_light_colorize(PointLight light, vec4 position);
 
 
 vec3 compute_dir_light(DirLight light, Material material, vec3 normal, vec3 camera_dir)
@@ -116,10 +117,10 @@ vec3 compute_lights(Material material, vec3 normal)
         light_color += compute_dir_light(dir_lights[i], material, normal, camera_dir);
     // Point lights
     for(int i = 0; i < NB_POINT_LIGHTS; i++)
-        light_color += compute_point_light(point_lights[i], material, normal, camera_dir);
-    // Spot light
-    //for(int i = 0; i < NB_SPOT_LIGHTS; i++)
-        //light_color += compute_spot_light(spot_lights[i], material, normal, camera_dir);
+    {
+        PointLight colorized_light = ice_point_light_colorize(point_lights[i], fs_in.pos);
+        light_color += compute_point_light(colorized_light, material, normal, camera_dir);
+    }
 
     return light_color;
 }
@@ -155,16 +156,7 @@ vec4 compute_water_texture(vec3 normal, vec2 distortion, float water_depth, floa
     vec4 refract = texture(texture_other1, refract_tex_coords);
 
     // Darker when deeper
-    refract = mix(refract, vec4(0,0.04,0.2, 0.9), clamp(water_depth / 50, 0, 1));
-
-    // Try
-    //FIXME
-    //reflect.rgb = vec3(1.0) - exp(-reflect.rgb);
-    //refract.rgb = vec3(1.0) - exp(-refract.rgb);
-
-    //reflect.rgb = -log(-reflect.rgb + 1);
-    //refract.rgb = -log(-refract.rgb + 1);
-
+    refract = mix(refract, vec4(0,0.04,0.2, 0.9), clamp(water_depth / 60, 0, 1));
 
 
     // Fresnel
