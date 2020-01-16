@@ -11,16 +11,14 @@ layout (location = 0) out vec4 output_color;
 
 uniform vec3 light_color;
 
-float get_ice_state(vec4 position);
-float get_ice_wave(float ice_state);
+vec4 ice_light_colorize(vec4 color, vec4 position);
 
 void main()
 {
     output_color = vec4(light_color, 1.0);
 
     // Ice Age color
-    const float transition_speed = 4;
-    output_color = mix(output_color, vec4(1.f, 1.f, 10.f, 1), clamp(get_ice_state(fs_in.pos) * transition_speed, 0, 1));
+    output_color = ice_light_colorize(output_color, fs_in.pos);
 
     /*
     float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
