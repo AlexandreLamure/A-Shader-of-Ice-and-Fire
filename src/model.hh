@@ -27,10 +27,8 @@ public:
 };
 
 class LightModel : public Model {
-
 public:
-    PointLight pointlight;
+    PointLight point_light;
 
     LightModel(std::string path, GLuint draw_mode, Light light);
-
 };

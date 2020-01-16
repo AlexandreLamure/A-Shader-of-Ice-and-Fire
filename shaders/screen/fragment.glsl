@@ -12,22 +12,34 @@ uniform sampler2D texture_other0; // Bloom FBO
 uniform sampler2D texture_other1; // Blur FBO
 
 
+uniform float total_time;
+
 void main()
 {
     const float gamma = 2.2;
     const float exposure = 1.5;
 
-    //output_color = texture(texture_other0, fs_in.tex_coords);
+    vec3 hdr_color = texture(texture_other0, fs_in.tex_coords).rgb;
+    vec3 blur_color = texture(texture_other1, fs_in.tex_coords).rgb;
 
-    vec3 hdrColor = texture(texture_other0, fs_in.tex_coords).rgb;
-    vec3 BlurColor = texture(texture_other1, fs_in.tex_coords).rgb;
+    hdr_color += blur_color;
 
-    hdrColor += BlurColor;
+    //vec3 result = hdr_color / (hdr_color + vec3(1.0));
+    vec3 result = vec3(1.0) - exp(-hdr_color * exposure);
 
-    //vec3 result = hdrColor / (hdrColor + vec3(1.0));
-    vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
+    // funny mode
+    //result = -log(- (-log(-result + 1)) + 1);
 
     //result = pow(result, vec3(1.0 / gamma));
 
-    output_color = vec4(result, 1.0);
+
+    // for debug
+    //if (fs_in.tex_coords.x > 0.5)
+        output_color = vec4(result, 1.0);
+    /*
+    else if (fs_in.tex_coords.x == 0.5)
+        output_color = vec4(1, 0, 0, 1);
+    else
+        output_color = texture(texture_other0, fs_in.tex_coords);
+    */
 }

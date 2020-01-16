@@ -106,7 +106,6 @@ Mesh Model::process_mesh(aiMesh *mesh, const aiScene *scene)
     return Mesh(vertices, indices, textures, draw_mode);
 }
 
-
 std::vector<Texture> Model::load_material_textures(aiMaterial *mat, aiTextureType type, std::string type_name)
 {
     std::vector<Texture> textures;
@@ -177,12 +176,13 @@ unsigned int Model::texture_from_file(const char *path, const std::string &direc
     return texture_id;
 }
 
-
 void Model::draw(Program program, std::vector<GLuint>* other_textures)
 {
     for(unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].draw(program, other_textures);
 }
+
+
 
 /* Light Model ------------------------------------------------------------------------------------------------------ */
 
@@ -210,5 +210,5 @@ LightModel::LightModel(std::string path, GLuint draw_mode, Light light)
 
     glm::vec3 pos = {x / cpt, y / cpt, z / cpt};
 
-    pointlight = PointLight(light.ambient, light.diffuse, light.specular, pos);
+    point_light = PointLight(light.ambient, light.diffuse, light.specular, pos);
 }
