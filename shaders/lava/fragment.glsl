@@ -33,7 +33,7 @@ void main()
 
     // Cancel HDR luminosity
     // The color of lava texture does not compute lights, so the value is already between 0 and 1.
-    output_color.rgb = -log(-output_color.rgb + 1.001 - ice_color_decay);
+    output_color.rgb = -log(-output_color.rgb + 1.0001 - ice_color_decay);
 
     // For biohazard mode
     //output_color.rgb = -log(-output_color.rgb + 1);

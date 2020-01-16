@@ -113,9 +113,6 @@ vec3 compute_lights(Material material, vec3 normal)
     // Point lights
     for(int i = 0; i < NB_POINT_LIGHTS; i++)
         light_color += compute_point_light(point_lights[i], material, normal, camera_dir);
-    // Spot light
-    //for(int i = 0; i < NB_SPOT_LIGHTS; i++)
-        //light_color += compute_spot_light(spot_lights[i], material, normal, camera_dir);
 
     return light_color;
 }
