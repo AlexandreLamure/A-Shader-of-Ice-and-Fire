@@ -141,5 +141,5 @@ void main()
 
     // Decrease light under water
     if (fs_in.pos.y < water_h)
-        output_color.rgb *= vec3(0.4, 0.42, 0.5);
+        output_color.rgb *= vec3(0.4, 0.42, 0.7);
 }
