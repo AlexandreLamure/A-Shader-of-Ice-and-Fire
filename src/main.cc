@@ -219,12 +219,12 @@ int main()
     // Create Lights
     std::vector<DirLight> dir_lights;
     dir_lights.push_back(DirLight({0.1f, 0.1f, 0.1f}, // ambient
-                                  {1.0f, 1.0f, 1.0f}, // diffuse
-                                  {1.0f, 1.0f, 1.0f}, // specular
+                                  {0.7f, 0.7f, 0.7f}, // diffuse
+                                  {0.7f, 0.7f, 0.7f}, // specular
                                   {-1.f, -1.f, -1.f})); // direction
     dir_lights.push_back(DirLight({0.1f, 0.1f, 0.1f}, // ambient
-                                  {1.0f, 1.0f, 1.0f}, // diffuse
-                                  {1.0f, 1.0f, 1.0f}, // specular
+                                  {0.7f, 0.7f, 0.7f}, // diffuse
+                                  {0.7f, 0.7f, 0.7f}, // specular
                                   {1.f, -1.f, -1.f})); // direction
 
 
@@ -391,6 +391,7 @@ int main()
         // set uniforms
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0,0,0,0});
         volcano_program.set_mat4("model", model_mat);
+        volcano_program.set_float("water_h", water_h);
         // Draw
         volcano.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);

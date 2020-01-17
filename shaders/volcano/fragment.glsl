@@ -58,6 +58,7 @@ uniform sampler2D texture_normal1;
 
 uniform float total_time;
 uniform vec3 camera_pos;
+uniform float water_h;
 
 float get_ice_state(vec4 position);
 float get_ice_wave(float ice_state);
@@ -137,4 +138,8 @@ void main()
     material.shininess = 20; //FIXME: get value from assimp
 
     output_color = vec4(compute_lights(material, normal), diffuse.a);
+
+    // Decrease light under water
+    if (fs_in.pos.y < water_h)
+        output_color.rgb *= vec3(0.4, 0.42, 0.5);
 }
