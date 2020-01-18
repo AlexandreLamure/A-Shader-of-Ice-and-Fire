@@ -24,7 +24,6 @@ void main()
 
     hdr_color += blur_color;
 
-    //vec3 result = hdr_color / (hdr_color + vec3(1.0));
     vec3 result = vec3(1.0) - exp(-hdr_color * exposure);
 
     // funny mode
@@ -32,14 +31,5 @@ void main()
 
     //result = pow(result, vec3(1.0 / gamma));
 
-
-    // for debug
-    //if (fs_in.tex_coords.x > 0.5)
-        output_color = vec4(result, 1.0);
-    /*
-    else if (fs_in.tex_coords.x == 0.5)
-        output_color = vec4(1, 0, 0, 1);
-    else
-        output_color = texture(texture_other0, fs_in.tex_coords);
-    */
+    output_color = vec4(result, 1.0);
 }

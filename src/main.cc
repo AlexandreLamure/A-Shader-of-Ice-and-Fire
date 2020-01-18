@@ -159,6 +159,7 @@ int main()
 
     // water constant
     constexpr float water_h = 7.0f; // FIXME: get this from obj
+    constexpr glm::vec3 water_limits = glm::vec3(22.5, water_h, 19);
 
     // time variables
     float total_time = 0.f;
@@ -391,7 +392,7 @@ int main()
         // set uniforms
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0,0,0,0});
         volcano_program.set_mat4("model", model_mat);
-        volcano_program.set_float("water_h", water_h);
+        volcano_program.set_vec3("water_limits", water_limits);
         // Draw
         volcano.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);

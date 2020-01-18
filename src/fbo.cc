@@ -55,7 +55,6 @@ FBO::FBO(int width, int height, int nb_data)
 
 void FBO::realloc(int width, int height)
 {
-    //glDeleteFramebuffers(1, &fbo_id);
     glDeleteTextures(color_textures.size(), &(color_textures[0]));
     glDeleteTextures(1, &depth_texture);
 
