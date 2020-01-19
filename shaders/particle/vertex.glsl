@@ -16,7 +16,7 @@ uniform vec4 color;
 
 void main()
 {
-    const float scale = 2;
+    const float scale = 1.4;
     vs_out.tex_coords = tex_coords;
     vs_out.color = color;
     gl_ClipDistance[0] = 0;

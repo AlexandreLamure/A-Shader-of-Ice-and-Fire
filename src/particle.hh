@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include "program.hh"
 #include "mesh.hh"
+#include "model.hh"
 
 class Particle {
 public:
@@ -18,17 +19,25 @@ public:
 };
 
 class ParticleGenerator {
-private:
+protected:
     std::vector<Particle> particles;
     unsigned int texture_id;
     unsigned int VAO, VBO;
     int last_used;
+    std::vector<glm::vec3> origins;
 
     void setup_mesh(const std::string& texture_path);
     int get_first_dead();
 
 public:
-    ParticleGenerator(int nb_particles, const std::string& texture_path);
+    ParticleGenerator(int nb_particles, std::vector<glm::vec3>& origins, const std::string& texture_path);
     void update(float delta_time, int nb_new);
     void draw(Program& program);
 };
+
+class LavaParticleGenerator : public ParticleGenerator {
+public:
+    LavaParticleGenerator(int nb_particles, std::vector<glm::vec3>& origins, const std::string& texture_path);
+};
+
+LavaParticleGenerator init_lava_particle_generator(const Model& lava);

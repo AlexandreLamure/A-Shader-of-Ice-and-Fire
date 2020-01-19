@@ -241,7 +241,7 @@ int main()
     //model_mat = glm::translate(model_mat, glm::vec3(10.f, -25.f, -30.f));
     //model_mat = glm::rotate(model_mat, glm::radians(40.f), glm::vec3(0.f, 1.f, 0.f));
 
-    ParticleGenerator generator(300, "../models/particle/particle.png");
+    LavaParticleGenerator lava_generator = init_lava_particle_generator(lava);
 
     // SOUND
     //SoundEngine->play2D("../audio/getout.ogg", GL_TRUE);
@@ -443,21 +443,6 @@ int main()
         water.draw(water_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
 
-        // PARTICLES ---------------------------------------------------------------------------------------------------
-        generator.update(delta_time, 2);
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glUseProgram(particle_program.program_id);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
-        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
-        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
-        particle_program.set_mat4("view", view);
-        particle_program.set_mat4("projection", projection);
-        generator.draw(particle_program);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        // -------------------------------------------------------------------------------------------------------------
-
         // CUBEMAP -----------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -471,6 +456,21 @@ int main()
         cubemap_program.set_mat4("projection", projection);
         // Draw
         cubemap.draw(cubemap_program);
+        // -------------------------------------------------------------------------------------------------------------
+
+        // PARTICLES ---------------------------------------------------------------------------------------------------
+        lava_generator.update(delta_time, 2);
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glUseProgram(particle_program.program_id);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+        particle_program.set_mat4("view", view);
+        particle_program.set_mat4("projection", projection);
+        lava_generator.draw(particle_program);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         // -------------------------------------------------------------------------------------------------------------
 
 

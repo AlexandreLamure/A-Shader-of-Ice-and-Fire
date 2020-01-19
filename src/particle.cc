@@ -9,21 +9,23 @@ Particle::Particle(const glm::vec3& origin)
 
 void Particle::init(const glm::vec3& origin)
 {
-    // positions [-5, 5]
-    float random_x = ((std::rand() % 100) - 50) / 10.0f;
-    float random_y = ((std::rand() % 100) - 50) / 10.0f + 20;
-    float random_z = ((std::rand() % 100) - 50) / 10.0f;
+    // positions [-1, 1]
+    float random_x = ((std::rand() % 100)) / 100.0f - 0.5f;
+    float random_y = ((std::rand() % 100)) / 100.0f - 0.5f;
+    float random_z = ((std::rand() % 100)) / 100.0f - 0.5f;
     position = origin + glm::vec3(random_x, random_y, random_z);
-    velocity = glm::vec3(0,10,0);
+    velocity = glm::vec3(0,3,0);
     color = glm::vec4(1);
     life = 1.0f;
 }
 
-ParticleGenerator::ParticleGenerator(int nb_particles, const std::string& texture_path)
+ParticleGenerator::ParticleGenerator(int nb_particles, std::vector<glm::vec3>& origins, const std::string& texture_path)
 {
     last_used = 0;
+    this->origins = origins;
+
     for (int i = 0; i < nb_particles; ++i)
-        particles.emplace_back(Particle(glm::vec3(0))); // FIXME
+        particles.emplace_back(Particle(origins[i]));
 
     setup_mesh(texture_path);
 }
@@ -93,7 +95,7 @@ void ParticleGenerator::update(float delta_time, int nb_new)
     for (int i = 0; i < nb_new; ++i)
     {
         int dead_id = get_first_dead();
-        particles[dead_id].init(glm::vec3(0)); // FIXME : get origin pos from lava
+        particles[dead_id].init(origins[dead_id]);
     }
 
     for (int i = 0; i < particles.size(); ++i)
@@ -104,6 +106,8 @@ void ParticleGenerator::update(float delta_time, int nb_new)
         {
             p.position += p.velocity * delta_time;
             p.color.a -= delta_time * 5;
+            if (p.color.a < 0)
+                p.color.a = 0;
         }
     }
 }
@@ -114,7 +118,7 @@ void ParticleGenerator::draw(Program& program)
     {
         if (p.life > 0.0f)
         {
-            program.set_vec3("offset", p.position + glm::vec3(0,0,-10));
+            program.set_vec3("offset", p.position);
             program.set_vec4("color", p.color);
 
             glActiveTexture(GL_TEXTURE0);
@@ -126,4 +130,20 @@ void ParticleGenerator::draw(Program& program)
             glBindVertexArray(0);
         }
     }
+}
+
+LavaParticleGenerator::LavaParticleGenerator(int nb_particles, std::vector<glm::vec3>& origins, const std::string& texture_path)
+    : ParticleGenerator(nb_particles, origins, texture_path)
+{}
+
+LavaParticleGenerator init_lava_particle_generator(const Model& lava)
+{
+    std::vector<glm::vec3> origins;
+    for (const Mesh& mesh : lava.meshes)
+    {
+        for (int i = 0; i < mesh.vertices.size(); i+=4)
+            origins.emplace_back(mesh.vertices[i].position + glm::vec3(0,2,0));
+    }
+    std::cout << origins.size() << " origins" << std::endl;
+    return LavaParticleGenerator(origins.size(), origins, "../models/particle/lava.png");
 }
