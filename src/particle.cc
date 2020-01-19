@@ -11,12 +11,11 @@ void Particle::init(const glm::vec3& origin)
 {
     // positions [-5, 5]
     float random_x = ((std::rand() % 100) - 50) / 10.0f;
-    float random_y = ((std::rand() % 100) - 50) / 10.0f;
+    float random_y = ((std::rand() % 100) - 50) / 10.0f + 20;
     float random_z = ((std::rand() % 100) - 50) / 10.0f;
-    float red = 0.3 + ((std::rand() % 100) / 100.0f);
     position = origin + glm::vec3(random_x, random_y, random_z);
     velocity = glm::vec3(0,10,0);
-    color = glm::vec4(red, 0, 0, 1.0f);
+    color = glm::vec4(1);
     life = 1.0f;
 }
 
@@ -104,7 +103,7 @@ void ParticleGenerator::update(float delta_time, int nb_new)
         if (p.life > 0)
         {
             p.position += p.velocity * delta_time;
-            //p.color.a -= delta_time * 2.5;
+            p.color.a -= delta_time * 5;
         }
     }
 }

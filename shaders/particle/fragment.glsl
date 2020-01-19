@@ -12,5 +12,5 @@ uniform sampler2D sprite;
 
 void main()
 {
-    output_color = fs_in.color * vec4(1);//texture(sprite, fs_in.tex_coords)
+    output_color = fs_in.color * texture(sprite, fs_in.tex_coords);
 }
