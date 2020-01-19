@@ -14,8 +14,8 @@ void Particle::init(const glm::vec3& origin)
     float random_y = ((std::rand() % 100)) / 100.0f - 0.5f;
     float random_z = ((std::rand() % 100)) / 100.0f - 0.5f;
     position = origin + glm::vec3(random_x, random_y, random_z);
-    velocity = glm::vec3(0,3,0);
-    color = glm::vec4(1);
+    velocity = glm::vec3(0,1,0);
+    color = glm::vec4(3.5, 2, 2, 1);
     life = 1.0f;
 }
 
@@ -33,7 +33,6 @@ ParticleGenerator::ParticleGenerator(int nb_particles, std::vector<glm::vec3>& o
 void ParticleGenerator::setup_mesh(const std::string& texture_path)
 {
     texture_id = Model::texture_from_file(texture_path.c_str(), ".");
-    std::cout << "texture_id " << texture_id << std::endl;
 
     float particle_quad[] = {
             // positions        tex coords
@@ -83,29 +82,27 @@ int ParticleGenerator::get_first_dead()
             return i;
         }
     }
-    // Override first particle if all others are alive
-    std::cerr << "Particle lived too long" << std::endl;
-    last_used = 0;
-    return 0;
+    return -1;
 }
 
-void ParticleGenerator::update(float delta_time, int nb_new)
+void ParticleGenerator::update(float delta_time, float total_time)
 {
-    // Add new particles
-    for (int i = 0; i < nb_new; ++i)
-    {
-        int dead_id = get_first_dead();
+    // Reset dead particles
+    int dead_id = get_first_dead();
+    if (dead_id != -1)
         particles[dead_id].init(origins[dead_id]);
-    }
 
+    // Update values
     for (int i = 0; i < particles.size(); ++i)
     {
         Particle& p = particles[i];
-        p.life -= delta_time * 2; // reduce life
+        p.life -= delta_time * 0.8; // reduce life
         if (p.life > 0)
         {
+            p.velocity.x = cos(total_time / 2 + i / 3.14) * 0.6;
+            p.velocity.z = sin(total_time / 2 + i / 2) * 0.6;
             p.position += p.velocity * delta_time;
-            p.color.a -= delta_time * 5;
+            p.color.a = p.life * 1.5;
             if (p.color.a < 0)
                 p.color.a = 0;
         }
@@ -141,8 +138,8 @@ LavaParticleGenerator init_lava_particle_generator(const Model& lava)
     std::vector<glm::vec3> origins;
     for (const Mesh& mesh : lava.meshes)
     {
-        for (int i = 0; i < mesh.vertices.size(); i+=4)
-            origins.emplace_back(mesh.vertices[i].position + glm::vec3(0,2,0));
+        for (int i = 0; i < mesh.vertices.size(); i+=15)
+            origins.emplace_back(mesh.vertices[i].position);
     }
     std::cout << origins.size() << " origins" << std::endl;
     return LavaParticleGenerator(origins.size(), origins, "../models/particle/lava.png");

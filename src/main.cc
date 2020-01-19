@@ -197,6 +197,7 @@ int main()
     Model water("../models/water/waterLOD0.obj", GL_PATCHES);
     Model volcano("../models/volcan/volcan.obj", GL_TRIANGLES);
     Model lava("../models/lava/lava.obj", GL_PATCHES);
+    Model lava_particle("../models/lava/lava_particle.obj", GL_TRIANGLES);
     Model cave_lava("../models/cave_lava/cave_lava.obj", GL_PATCHES);
     Model lamp1("../models/lamps/lamp1/lamp.obj", GL_TRIANGLES);
     Model lamp2("../models/lamps/lamp2/lamp.obj", GL_TRIANGLES);
@@ -241,7 +242,7 @@ int main()
     //model_mat = glm::translate(model_mat, glm::vec3(10.f, -25.f, -30.f));
     //model_mat = glm::rotate(model_mat, glm::radians(40.f), glm::vec3(0.f, 1.f, 0.f));
 
-    LavaParticleGenerator lava_generator = init_lava_particle_generator(lava);
+    LavaParticleGenerator lava_generator = init_lava_particle_generator(lava_particle);
 
     // SOUND
     //SoundEngine->play2D("../audio/getout.ogg", GL_TRUE);
@@ -459,7 +460,7 @@ int main()
         // -------------------------------------------------------------------------------------------------------------
 
         // PARTICLES ---------------------------------------------------------------------------------------------------
-        lava_generator.update(delta_time, 2);
+        lava_generator.update(delta_time, total_time);
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glUseProgram(particle_program.program_id);

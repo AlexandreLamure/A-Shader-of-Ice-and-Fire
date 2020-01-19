@@ -31,7 +31,7 @@ protected:
 
 public:
     ParticleGenerator(int nb_particles, std::vector<glm::vec3>& origins, const std::string& texture_path);
-    void update(float delta_time, int nb_new);
+    void update(float delta_time, float total_time);
     void draw(Program& program);
 };
 
