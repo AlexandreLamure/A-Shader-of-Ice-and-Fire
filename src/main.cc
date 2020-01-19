@@ -17,6 +17,7 @@
 #include "light.hh"
 #include "cubemap.hh"
 #include "paths.hh"
+#include "particle.hh"
 
 
 Camera camera;
@@ -172,7 +173,7 @@ int main()
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetKeyCallback(window, key_callback);
 
-
+    std::srand(std::time(nullptr));
 
     // LOAD PROGRAMS ---------------------------------------------------------------------------------------------------
     Program volcano_program(PATHS::volcano_vertex, PATHS::volcano_tc, PATHS::volcano_te, PATHS::volcano_geometry, PATHS::volcano_frag);
@@ -180,6 +181,7 @@ int main()
     Program water_program(PATHS::water_vertex, PATHS::water_tc, PATHS::water_te, PATHS::water_geometry, PATHS::water_frag);
     Program cubemap_program(PATHS::cubemap_vertex, PATHS::cubemap_tc, PATHS::cubemap_te, PATHS::cubemap_geometry, PATHS::cubemap_frag);
     Program light_program(PATHS::light_vertex, PATHS::light_tc, PATHS::light_te, PATHS::light_geometry, PATHS::light_frag);
+    Program particle_program(PATHS::particle_vertex, PATHS::particle_tc, PATHS::particle_te, PATHS::particle_geometry, PATHS::particle_frag);
     Program bloom_program(PATHS::bloom_vertex, PATHS::bloom_tc, PATHS::bloom_te, PATHS::bloom_geometry, PATHS::bloom_frag);
     Program blur_program(PATHS::blur_vertex, PATHS::blur_tc, PATHS::blur_te, PATHS::blur_geometry, PATHS::blur_frag);
     Program screen_program(PATHS::screen_vertex, PATHS::screen_tc, PATHS::screen_te, PATHS::screen_geometry, PATHS::screen_frag);
@@ -239,6 +241,7 @@ int main()
     //model_mat = glm::translate(model_mat, glm::vec3(10.f, -25.f, -30.f));
     //model_mat = glm::rotate(model_mat, glm::radians(40.f), glm::vec3(0.f, 1.f, 0.f));
 
+    ParticleGenerator generator(300, "../models/particle/particle.png");
 
     // SOUND
     //SoundEngine->play2D("../audio/getout.ogg", GL_TRUE);
@@ -327,7 +330,6 @@ int main()
         glDisable(GL_CULL_FACE);
         glUseProgram(cubemap_program.program_id);
         // set uniforms
-
         view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
         view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
         window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
@@ -441,9 +443,24 @@ int main()
         water.draw(water_program, &other_textures);
         // -------------------------------------------------------------------------------------------------------------
 
-        // CUBEMAP -----------------------------------------------------------------------------------------------------
+        // PARTICLES ---------------------------------------------------------------------------------------------------
+        generator.update(delta_time, 2);
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
+        glUseProgram(particle_program.program_id);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+        particle_program.set_mat4("view", view);
+        particle_program.set_mat4("projection", projection);
+        generator.draw(particle_program);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        // -------------------------------------------------------------------------------------------------------------
+
+        // CUBEMAP -----------------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
         glUseProgram(cubemap_program.program_id);
         // set uniforms
         view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
@@ -455,6 +472,8 @@ int main()
         // Draw
         cubemap.draw(cubemap_program);
         // -------------------------------------------------------------------------------------------------------------
+
+
 
 
 

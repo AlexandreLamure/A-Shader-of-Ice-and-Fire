@@ -17,18 +17,18 @@ protected:
 
     void process_node(aiNode *node, const aiScene *scene);
     Mesh process_mesh(aiMesh *mesh, const aiScene *scene);
-    std::vector<Texture> load_material_textures(aiMaterial *mat, aiTextureType type, std::string type_name);
-    unsigned int texture_from_file(const char *path, const std::string &directory);
+    std::vector<Texture> load_material_textures(aiMaterial *mat, aiTextureType type, const std::string& type_name);
 
 
 public:
-    Model(std::string path, GLuint draw_mode);
+    Model(const std::string& path, GLuint draw_mode);
     void draw(Program program, std::vector<GLuint>* other_textures);
+    static unsigned int texture_from_file(const char *path, const std::string& directory);
 };
 
 class LightModel : public Model {
 public:
     PointLight point_light;
 
-    LightModel(std::string path, GLuint draw_mode, Light light);
+    LightModel(const std::string& path, GLuint draw_mode, Light& light);
 };

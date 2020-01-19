@@ -56,6 +56,14 @@ namespace PATHS
     const std::vector<const char*> light_frag{"../shaders/utils/ice.glsl", "../shaders/light/fragment.glsl"};
 
 
+    // PARTICLE PROGRAM ------------------------------------------------------------------------------------------------
+    const std::vector<const char*> particle_vertex{"../shaders/particle/vertex.glsl"};
+    const std::vector<const char*> particle_tc{};
+    const std::vector<const char*> particle_te{};
+    const std::vector<const char*> particle_geometry{};
+    const std::vector<const char*> particle_frag{"../shaders/particle/fragment.glsl"};
+
+
     // BLOOM PROGRAM --------------------------------------------------------------------------------------------------
     const std::vector<const char*> bloom_vertex{"../shaders/bloom/vertex.glsl"};
     const std::vector<const char*> bloom_tc{};

@@ -4,7 +4,7 @@
 #include "../lib/stb/stb_image.h"
 
 
-Model::Model(std::string path, GLuint draw_mode)
+Model::Model(const std::string& path, GLuint draw_mode)
 {
     this->draw_mode = draw_mode;
 
@@ -106,7 +106,7 @@ Mesh Model::process_mesh(aiMesh *mesh, const aiScene *scene)
     return Mesh(vertices, indices, textures, draw_mode);
 }
 
-std::vector<Texture> Model::load_material_textures(aiMaterial *mat, aiTextureType type, std::string type_name)
+std::vector<Texture> Model::load_material_textures(aiMaterial *mat, aiTextureType type, const std::string& type_name)
 {
     std::vector<Texture> textures;
     for(unsigned int i = 0; i < mat->GetTextureCount(type); i++)
@@ -136,10 +136,11 @@ std::vector<Texture> Model::load_material_textures(aiMaterial *mat, aiTextureTyp
     return textures;
 }
 
-unsigned int Model::texture_from_file(const char *path, const std::string &directory)
+unsigned int Model::texture_from_file(const char *path, const std::string& directory)
 {
     std::string filename = std::string(path);
     filename = directory + '/' + filename;
+    std::cout << "filename " << filename << std::endl;
 
     unsigned int texture_id;
     glGenTextures(1, &texture_id);
@@ -186,7 +187,7 @@ void Model::draw(Program program, std::vector<GLuint>* other_textures)
 
 /* Light Model ------------------------------------------------------------------------------------------------------ */
 
-LightModel::LightModel(std::string path, GLuint draw_mode, Light light)
+LightModel::LightModel(const std::string& path, GLuint draw_mode, Light& light)
         : Model(path, draw_mode)
 {
     float x = 0.f;

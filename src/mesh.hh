@@ -32,12 +32,12 @@ public:
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
 
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, GLuint draw_mode);
-    void draw(Program program, std::vector<GLuint>* other_textures);
+    Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Texture>& textures, GLuint draw_mode);
+    void draw(Program& program, std::vector<GLuint>* other_textures);
 
 
 private:
     unsigned int VAO, VBO, EBO;
 
-    void setupMesh();
+    void setup_mesh();
 };

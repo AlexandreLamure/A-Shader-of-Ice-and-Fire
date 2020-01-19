@@ -15,6 +15,7 @@ add_executable(${BIN}
                src/light.cc src/light.hh
                src/cubemap.cc src/cubemap.hh
                src/paths.hh lib/irrKlang/irrKlang.h
+               src/particle.cc src/particle.hh
                src/main.cc)
 
 #OpenGL
