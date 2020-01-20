@@ -45,10 +45,11 @@ out vec4 output_color;
 
 
 #define NB_DIR_LIGHTS 2
-#define NB_POINT_LIGHTS 2
+#define NB_LIGHT_MODELS 2
+#define NB_POINT_LIGHTS 10
 
 uniform DirLight dir_lights[NB_DIR_LIGHTS];
-uniform PointLight point_lights[NB_POINT_LIGHTS];
+uniform PointLight point_lights[NB_LIGHT_MODELS + NB_POINT_LIGHTS];
 
 
 uniform sampler2D texture_ambient1;
@@ -110,10 +111,21 @@ vec3 compute_lights(Material material, vec3 normal)
     for(int i = 0; i < NB_DIR_LIGHTS; i++)
         light_color += compute_dir_light(dir_lights[i], material, normal, camera_dir);
     // Point lights
-    for(int i = 0; i < NB_POINT_LIGHTS; i++)
+    for(int i = 0; i < NB_LIGHT_MODELS; i++)
     {
         PointLight colorized_light = ice_point_light_colorize(point_lights[i], fs_in.pos);
         light_color += compute_point_light(colorized_light, material, normal, camera_dir);
+    }
+    float ice_state = clamp(get_ice_state(fs_in.pos), 0, 1);
+    if (ice_state != 1)
+    {
+        for (int i = NB_LIGHT_MODELS; i < NB_LIGHT_MODELS + NB_POINT_LIGHTS; i++)
+        {
+            PointLight colorized_light = ice_point_light_colorize(point_lights[i], fs_in.pos);
+            const float decrease_speed = 5;
+            colorized_light.diffuse.r += colorized_light.diffuse.r * 0.3 * cos(total_time*1.5+fs_in.tex_coords.x*fs_in.tex_coords.y*3.14);
+            light_color += compute_point_light(colorized_light, material, normal, camera_dir) * (1 - clamp(ice_state*decrease_speed,0,1));
+        }
     }
 
     return light_color;

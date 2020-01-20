@@ -110,7 +110,7 @@ void process_input(GLFWwindow *window, float delta_time)
 
 
 void set_uniforms(Program& program, int window_w, int window_h, float total_time, float delta_time,
-                  std::vector<DirLight>& dir_lights, std::vector<LightModel>& light_models,
+                  std::vector<DirLight>& dir_lights, std::vector<PointLight>& point_lights, std::vector<LightModel>& light_models,
                   glm::vec4 clip_plane)
 {
     // set uniforms
@@ -126,6 +126,8 @@ void set_uniforms(Program& program, int window_w, int window_h, float total_time
         dir_lights[i].set(program, i);
     for (int i = 0; i < light_models.size(); ++i)
         light_models[i].point_light.set(program, i);
+    for (int i = 0; i < point_lights.size(); ++i)
+        point_lights[i].set(program, i + light_models.size());
 
     program.set_vec3("camera_pos", camera.pos);
     program.set_vec2("mouse_pos", camera.mouse_pos);
@@ -223,13 +225,27 @@ int main()
     // Create Lights
     std::vector<DirLight> dir_lights;
     dir_lights.push_back(DirLight({0.1f, 0.1f, 0.1f}, // ambient
-                                  {0.7f, 0.7f, 0.7f}, // diffuse
-                                  {0.7f, 0.7f, 0.7f}, // specular
+                                  {0.5f, 0.5f, 0.5f}, // diffuse
+                                  {0.5f, 0.5f, 0.5f}, // specular
                                   {-1.f, -1.f, -1.f})); // direction
     dir_lights.push_back(DirLight({0.1f, 0.1f, 0.1f}, // ambient
-                                  {0.7f, 0.7f, 0.7f}, // diffuse
-                                  {0.7f, 0.7f, 0.7f}, // specular
+                                  {0.5f, 0.5f, 0.5f}, // diffuse
+                                  {0.5f, 0.5f, 0.5f}, // specular
                                   {1.f, -1.f, -1.f})); // direction
+    std::vector<PointLight> point_lights;
+    Light lava_color1 = Light({0.f, 0.f, 0.f}, {10.0f, 1.0f, 0.5f}, {10.0f, 1.0f, 0.5f});
+    Light lava_color2 = Light({0.f, 0.f, 0.f}, {1.4f, 0.4f, 0.f}, {1.4f, 0.4f, 0.f});
+    point_lights.push_back(PointLight(lava_color1.ambient, lava_color1.diffuse, lava_color1.specular, { 22, 19, -20}));
+    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {  5, 16, -20}));
+    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {-10,  9, -19}));
+    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {-21,  9, -15}));
+    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {  7, 19,  -7}));
+    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {  0,  9,  -6}));
+    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {-15,  9,  -1}));
+    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, { 16, 19,   4}));
+    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, { 16,  7,   8}));
+    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, { 16,  7,  22}));
+
 
 
     // To avoid redeclaration
@@ -295,7 +311,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
         // set uniforms
-        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0, 1, 0, -water_h+0.5});
+        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, 1, 0, -water_h+0.5});
         volcano_program.set_mat4("model", model_mat);
         // Draw
         volcano.draw(volcano_program, nullptr);
@@ -308,7 +324,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(lava_program.program_id);
         // set uniforms
-        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0, 1, 0, -water_h+0.5});
+        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, 1, 0, -water_h+0.5});
         lava_program.set_mat4("model", model_mat);
         // Draw
         lava.draw(lava_program, nullptr);
@@ -320,7 +336,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(light_program.program_id);
         // set uniforms
-        set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0, 1, 0, -water_h+0.5});
+        set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, 1, 0, -water_h+0.5});
         light_program.set_mat4("model", model_mat);
         // Draw
         light_program.set_vec3("light_color", light1.point_light.diffuse);
@@ -380,7 +396,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
         // set uniforms
-        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0, -1, 0, water_h+1});
+        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, -1, 0, water_h+1});
         volcano_program.set_mat4("model", model_mat);
         // Draw
         volcano.draw(volcano_program, nullptr);
@@ -393,7 +409,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(lava_program.program_id);
         // set uniforms
-        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0, -1, 0, water_h});
+        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, -1, 0, water_h});
         lava_program.set_mat4("model", model_mat);
         // Draw
         lava.draw(lava_program, nullptr);
@@ -414,7 +430,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(volcano_program.program_id);
         // set uniforms
-        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0,0,0,0});
+        set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
         volcano_program.set_mat4("model", model_mat);
         volcano_program.set_vec3("water_limits", water_limits);
         // Draw
@@ -428,7 +444,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(lava_program.program_id);
         // set uniforms
-        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0,0,0,0});
+        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
         lava_program.set_mat4("model", model_mat);
         // Draw
         lava.draw(lava_program, nullptr);
@@ -440,7 +456,7 @@ int main()
         glEnable(GL_CULL_FACE);
         glUseProgram(light_program.program_id);
         // set uniforms
-        set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0,0,0,0});
+        set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
         light_program.set_mat4("model", model_mat);
         // Draw
         light_program.set_vec3("light_color", light1.point_light.diffuse);
@@ -454,7 +470,7 @@ int main()
         glDisable(GL_CULL_FACE);
         glUseProgram(water_program.program_id);
         // set uniforms
-        set_uniforms(water_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0,0,0,0});
+        set_uniforms(water_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
         float slow_time = total_time * 0.007;
         float wave_speed = (slow_time - static_cast<int>(slow_time));
         wave_speed = std::max(wave_speed, 1.f - wave_speed) * 2.f;
@@ -560,7 +576,7 @@ int main()
         glDisable(GL_CULL_FACE);
         glUseProgram(screen_program.program_id);
         // set uniforms
-        set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, light_models, {0,0,0,0});
+        set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
         // Draw
         if (amount % 2 == 0)
             other_textures = {scene_fbo.color_textures[0], ping_pong2.color_textures[0]};
