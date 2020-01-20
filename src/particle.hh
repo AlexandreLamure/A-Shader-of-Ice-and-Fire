@@ -14,8 +14,8 @@ public:
     glm::vec4 color;
     float life;
 
-    explicit Particle(const glm::vec3& origin);
-    void init(const glm::vec3& origin);
+    explicit Particle(const glm::vec3& origin, float randomness, glm::vec3 velocity, glm::vec4 color);
+    void init(const glm::vec3& origin, float randomness, glm::vec3 velocity, glm::vec4 color);
 };
 
 class ParticleGenerator {
@@ -26,18 +26,19 @@ protected:
     int last_used;
     std::vector<glm::vec3> origins;
 
-    void setup_mesh(const std::string& texture_path);
     int get_first_dead();
 
 public:
-    ParticleGenerator(int nb_particles, std::vector<glm::vec3>& origins, const std::string& texture_path);
-    void update(float delta_time, float total_time);
+    ParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path);
+
+    virtual void update(float delta_time, float total_time) = 0;
     void draw(Program& program);
 };
 
 class LavaParticleGenerator : public ParticleGenerator {
 public:
     LavaParticleGenerator(int nb_particles, std::vector<glm::vec3>& origins, const std::string& texture_path);
+    void update(float delta_time, float total_time);
 };
 
 LavaParticleGenerator init_lava_particle_generator(const Model& lava);

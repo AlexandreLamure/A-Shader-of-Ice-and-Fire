@@ -2,47 +2,47 @@
 #include "particle.hh"
 #include "model.hh"
 
-Particle::Particle(const glm::vec3& origin)
+
+// Particle ------------------------------------------------------------------------------------------------------------
+
+Particle::Particle(const glm::vec3& origin, float randomness, glm::vec3 velocity, glm::vec4 color)
 {
-    init(origin);
+    init(origin, randomness, velocity, color);
 }
 
-void Particle::init(const glm::vec3& origin)
+void Particle::init(const glm::vec3& origin, float randomness, glm::vec3 velocity, glm::vec4 color)
 {
     // positions [-1, 1]
-    float random_x = ((std::rand() % 100)) / 100.0f - 0.5f;
-    float random_y = ((std::rand() % 100)) / 100.0f - 0.5f;
-    float random_z = ((std::rand() % 100)) / 100.0f - 0.5f;
+    float random_x = ((std::rand() % 100)) / 50.0f - 1.f * randomness;
+    float random_y = ((std::rand() % 100)) / 50.0f - 1.f * randomness;
+    float random_z = ((std::rand() % 100)) / 50.0f - 1.f * randomness;
     position = origin + glm::vec3(random_x, random_y, random_z);
-    velocity = glm::vec3(0,1,0);
-    color = glm::vec4(3.5, 2, 2, 1);
+    this->velocity = velocity;
+    this->color = color;
     life = 1.0f;
 }
 
-ParticleGenerator::ParticleGenerator(int nb_particles, std::vector<glm::vec3>& origins, const std::string& texture_path)
+
+
+
+// Particle Generator --------------------------------------------------------------------------------------------------
+
+ParticleGenerator::ParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path)
 {
     last_used = 0;
     this->origins = origins;
 
-    for (int i = 0; i < nb_particles; ++i)
-        particles.emplace_back(Particle(origins[i]));
-
-    setup_mesh(texture_path);
-}
-
-void ParticleGenerator::setup_mesh(const std::string& texture_path)
-{
     texture_id = Model::texture_from_file(texture_path.c_str(), ".");
 
     float particle_quad[] = {
             // positions        tex coords
             -0.5f,  0.5f, 0.f,   0.0f, 1.0f,
-             0.5f, -0.5f, 0.f,   1.0f, 0.0f,
+            0.5f, -0.5f, 0.f,   1.0f, 0.0f,
             -0.5f, -0.5f, 0.f,   0.0f, 0.0f,
 
             -0.5f,  0.5f, 0.f,   0.0f, 1.0f,
-             0.5f,  0.5f, 0.f,   1.0f, 1.0f,
-             0.5f, -0.5f, 0.f,   1.0f, 0.0f
+            0.5f,  0.5f, 0.f,   1.0f, 1.0f,
+            0.5f, -0.5f, 0.f,   1.0f, 0.0f
     };
 
     glGenVertexArrays(1, &VAO);
@@ -85,30 +85,6 @@ int ParticleGenerator::get_first_dead()
     return -1;
 }
 
-void ParticleGenerator::update(float delta_time, float total_time)
-{
-    // Reset dead particles
-    int dead_id = get_first_dead();
-    if (dead_id != -1)
-        particles[dead_id].init(origins[dead_id]);
-
-    // Update values
-    for (int i = 0; i < particles.size(); ++i)
-    {
-        Particle& p = particles[i];
-        p.life -= delta_time * 0.8; // reduce life
-        if (p.life > 0)
-        {
-            p.velocity.x = cos(total_time / 2 + i / 3.14) * 0.6;
-            p.velocity.z = sin(total_time / 2 + i / 2) * 0.6;
-            p.position += p.velocity * delta_time;
-            p.color.a = p.life * 1.5;
-            if (p.color.a < 0)
-                p.color.a = 0;
-        }
-    }
-}
-
 void ParticleGenerator::draw(Program& program)
 {
     for (Particle& p : particles)
@@ -129,16 +105,48 @@ void ParticleGenerator::draw(Program& program)
     }
 }
 
+
+
+
+// Lava Particle Generator ---------------------------------------------------------------------------------------------
+
 LavaParticleGenerator::LavaParticleGenerator(int nb_particles, std::vector<glm::vec3>& origins, const std::string& texture_path)
-    : ParticleGenerator(nb_particles, origins, texture_path)
-{}
+    : ParticleGenerator(origins, texture_path)
+{
+    for (int i = 0; i < nb_particles; ++i)
+        particles.emplace_back(Particle(origins[i], 0.8, glm::vec3(0,1,0), glm::vec4(3.5, 2, 2, 1)));
+}
+
+void LavaParticleGenerator::update(float delta_time, float total_time)
+{
+    // Reset dead particles
+    int dead_id = get_first_dead();
+    if (dead_id != -1)
+        particles[dead_id].init(origins[dead_id], 0.8, glm::vec3(0,1,0), glm::vec4(3.5, 2, 2, 1));
+
+    // Update values
+    for (int i = 0; i < particles.size(); ++i)
+    {
+        Particle& p = particles[i];
+        p.life -= delta_time * 0.8; // reduce life
+        if (p.life > 0)
+        {
+            p.velocity.x = cos(total_time / 2 + i / 3.14) * 0.6;
+            p.velocity.z = sin(total_time / 2 + i / 2) * 0.6;
+            p.position += p.velocity * delta_time;
+            p.color.a = p.life * 1.5;
+            if (p.color.a < 0)
+                p.color.a = 0;
+        }
+    }
+}
 
 LavaParticleGenerator init_lava_particle_generator(const Model& lava)
 {
     std::vector<glm::vec3> origins;
     for (const Mesh& mesh : lava.meshes)
     {
-        for (int i = 0; i < mesh.vertices.size(); i+=15)
+        for (int i = 0; i < mesh.vertices.size(); i+=20)
             origins.emplace_back(mesh.vertices[i].position);
     }
     std::cout << origins.size() << " origins" << std::endl;
