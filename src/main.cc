@@ -274,6 +274,11 @@ int main()
         process_input(window, delta_time);
 
 
+        if (ice_age)
+            snow_generator.update(delta_time, total_time);
+        else
+            lava_generator.update(delta_time, total_time);
+
 
         // =============================================================================================================
         // REFLECTION --------------------------------------------------------------------------------------------------
@@ -310,8 +315,6 @@ int main()
         cave_lava.draw(lava_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-
-
         // LIGHTS -------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -326,7 +329,6 @@ int main()
         light2.draw(light_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-
         // CUBEMAP -----------------------------------------------------------------------------------------------------
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
@@ -340,6 +342,24 @@ int main()
         cubemap_program.set_mat4("projection", projection);
         // Draw
         cubemap.draw(cubemap_program);
+        // -------------------------------------------------------------------------------------------------------------
+
+        // PARTICLES ---------------------------------------------------------------------------------------------------
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glUseProgram(particle_program.program_id);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+        particle_program.set_mat4("view", view);
+        particle_program.set_mat4("projection", projection);
+        if (ice_age)
+            snow_generator.draw(particle_program);
+        else
+            lava_generator.draw(particle_program);
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         // -------------------------------------------------------------------------------------------------------------
 
         // reset camera
@@ -471,15 +491,9 @@ int main()
         particle_program.set_mat4("view", view);
         particle_program.set_mat4("projection", projection);
         if (ice_age)
-        {
-            snow_generator.update(delta_time, total_time);
             snow_generator.draw(particle_program);
-        }
         else
-        {
-            lava_generator.update(delta_time, total_time);
             lava_generator.draw(particle_program);
-        }
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         // -------------------------------------------------------------------------------------------------------------

@@ -116,7 +116,7 @@ LavaParticleGenerator::LavaParticleGenerator(std::vector<glm::vec3>& origins, co
     : ParticleGenerator(origins, texture_path)
 {
     for (int i = 0; i < origins.size(); ++i)
-        particles.emplace_back(Particle(origins[i], glm::vec3(0.8), glm::vec3(0, 1, 0), glm::vec4(3.5, 2, 2, 1), 0.4));
+        particles.emplace_back(Particle(origins[i], glm::vec3(0.8), glm::vec3(0, 1, 0), glm::vec4(6, 3, 3, 1), 0.3));
 }
 
 void LavaParticleGenerator::update(float delta_time, float total_time)
@@ -124,7 +124,7 @@ void LavaParticleGenerator::update(float delta_time, float total_time)
     // Reset dead particles
     int dead_id = get_first_dead();
     if (dead_id != -1)
-        particles[dead_id].init(origins[dead_id], glm::vec3(0.8), glm::vec3(0,1,0), glm::vec4(3.5, 2, 2, 1), 0.4);
+        particles[dead_id].init(origins[dead_id], glm::vec3(0.8), glm::vec3(0,1,0), glm::vec4(6, 3, 3, 1), 0.3);
 
     // Update values
     for (int i = 0; i < particles.size(); ++i)
@@ -146,7 +146,7 @@ LavaParticleGenerator init_lava_particle_generator(const Model& lava)
     std::vector<glm::vec3> origins;
     for (const Mesh& mesh : lava.meshes)
     {
-        for (int i = 0; i < mesh.vertices.size(); i+=20)
+        for (int i = 0; i < mesh.vertices.size(); i+=24)
             origins.emplace_back(mesh.vertices[i].position);
     }
     std::cout << origins.size() << " lava origins" << std::endl;
@@ -165,7 +165,7 @@ SnowParticleGenerator::SnowParticleGenerator(std::vector<glm::vec3>& origins, co
 {
     for (int i = 0; i < origins.size(); ++i)
     {
-        particles.emplace_back(Particle(origins[i], glm::vec3(10,25,10), glm::vec3(0, -2, 0), glm::vec4(2, 2, 2, 1), 0.4));
+        particles.emplace_back(Particle(origins[i], glm::vec3(10,25,10), glm::vec3(0, -2, 0), glm::vec4(2, 2, 2, 1), 0.3));
         particles[i].life += (((std::rand() % 100)) / 50.0f - 1.f) * 1;
     }
 }
@@ -175,7 +175,7 @@ void SnowParticleGenerator::update(float delta_time, float total_time)
     // Reset dead particles
     int dead_id = get_first_dead();
     if (dead_id != -1)
-        particles[dead_id].init(origins[dead_id], glm::vec3(10,25,10), glm::vec3(0,-2,0), glm::vec4(2, 2, 2, 1), 0.4);
+        particles[dead_id].init(origins[dead_id], glm::vec3(10,25,10), glm::vec3(0,-2,0), glm::vec4(2, 2, 2, 1), 0.3);
 
     // Update values
     for (int i = 0; i < particles.size(); ++i)
