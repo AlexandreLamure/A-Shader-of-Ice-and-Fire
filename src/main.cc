@@ -243,6 +243,7 @@ int main()
     //model_mat = glm::rotate(model_mat, glm::radians(40.f), glm::vec3(0.f, 1.f, 0.f));
 
     LavaParticleGenerator lava_generator = init_lava_particle_generator(lava_particle);
+    SnowParticleGenerator snow_generator = init_snow_particle_generator();
 
     // SOUND
     //SoundEngine->play2D("../audio/getout.ogg", GL_TRUE);
@@ -460,7 +461,6 @@ int main()
         // -------------------------------------------------------------------------------------------------------------
 
         // PARTICLES ---------------------------------------------------------------------------------------------------
-        lava_generator.update(delta_time, total_time);
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glUseProgram(particle_program.program_id);
@@ -470,7 +470,17 @@ int main()
         projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
         particle_program.set_mat4("view", view);
         particle_program.set_mat4("projection", projection);
-        lava_generator.draw(particle_program);
+        if (ice_age)
+        {
+            snow_generator.update(delta_time, total_time);
+            snow_generator.draw(particle_program);
+        }
+        else
+        {
+            lava_generator.update(delta_time, total_time);
+            lava_generator.draw(particle_program);
+        }
+
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         // -------------------------------------------------------------------------------------------------------------
 

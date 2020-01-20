@@ -5,20 +5,21 @@
 
 // Particle ------------------------------------------------------------------------------------------------------------
 
-Particle::Particle(const glm::vec3& origin, float randomness, glm::vec3 velocity, glm::vec4 color)
+Particle::Particle(const glm::vec3& origin, glm::vec3 randomness, glm::vec3 velocity, glm::vec4 color, float scale)
 {
-    init(origin, randomness, velocity, color);
+    init(origin, randomness, velocity, color, scale);
 }
 
-void Particle::init(const glm::vec3& origin, float randomness, glm::vec3 velocity, glm::vec4 color)
+void Particle::init(const glm::vec3& origin, glm::vec3 randomness, glm::vec3 velocity, glm::vec4 color, float scale)
 {
     // positions [-1, 1]
-    float random_x = ((std::rand() % 100)) / 50.0f - 1.f * randomness;
-    float random_y = ((std::rand() % 100)) / 50.0f - 1.f * randomness;
-    float random_z = ((std::rand() % 100)) / 50.0f - 1.f * randomness;
+    float random_x = (((std::rand() % 100)) / 50.f - 1.f) * randomness.x;
+    float random_y = (((std::rand() % 100)) / 50.f - 1.f) * randomness.y;
+    float random_z = (((std::rand() % 100)) / 50.f - 1.f) * randomness.z;
     position = origin + glm::vec3(random_x, random_y, random_z);
     this->velocity = velocity;
     this->color = color;
+    this->scale = scale;
     life = 1.0f;
 }
 
@@ -93,6 +94,7 @@ void ParticleGenerator::draw(Program& program)
         {
             program.set_vec3("offset", p.position);
             program.set_vec4("color", p.color);
+            program.set_float("scale", p.scale);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -110,11 +112,11 @@ void ParticleGenerator::draw(Program& program)
 
 // Lava Particle Generator ---------------------------------------------------------------------------------------------
 
-LavaParticleGenerator::LavaParticleGenerator(int nb_particles, std::vector<glm::vec3>& origins, const std::string& texture_path)
+LavaParticleGenerator::LavaParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path)
     : ParticleGenerator(origins, texture_path)
 {
-    for (int i = 0; i < nb_particles; ++i)
-        particles.emplace_back(Particle(origins[i], 0.8, glm::vec3(0,1,0), glm::vec4(3.5, 2, 2, 1)));
+    for (int i = 0; i < origins.size(); ++i)
+        particles.emplace_back(Particle(origins[i], glm::vec3(0.8), glm::vec3(0, 1, 0), glm::vec4(3.5, 2, 2, 1), 0.4));
 }
 
 void LavaParticleGenerator::update(float delta_time, float total_time)
@@ -122,7 +124,7 @@ void LavaParticleGenerator::update(float delta_time, float total_time)
     // Reset dead particles
     int dead_id = get_first_dead();
     if (dead_id != -1)
-        particles[dead_id].init(origins[dead_id], 0.8, glm::vec3(0,1,0), glm::vec4(3.5, 2, 2, 1));
+        particles[dead_id].init(origins[dead_id], glm::vec3(0.8), glm::vec3(0,1,0), glm::vec4(3.5, 2, 2, 1), 0.4);
 
     // Update values
     for (int i = 0; i < particles.size(); ++i)
@@ -135,8 +137,6 @@ void LavaParticleGenerator::update(float delta_time, float total_time)
             p.velocity.z = sin(total_time / 2 + i / 2) * 0.6;
             p.position += p.velocity * delta_time;
             p.color.a = p.life * 1.5;
-            if (p.color.a < 0)
-                p.color.a = 0;
         }
     }
 }
@@ -149,6 +149,57 @@ LavaParticleGenerator init_lava_particle_generator(const Model& lava)
         for (int i = 0; i < mesh.vertices.size(); i+=20)
             origins.emplace_back(mesh.vertices[i].position);
     }
-    std::cout << origins.size() << " origins" << std::endl;
-    return LavaParticleGenerator(origins.size(), origins, "../models/particle/lava.png");
+    std::cout << origins.size() << " lava origins" << std::endl;
+    return LavaParticleGenerator(origins, "../models/particle/lava.png");
+}
+
+
+
+
+
+
+// Snow Particle Generator ---------------------------------------------------------------------------------------------
+
+SnowParticleGenerator::SnowParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path)
+        : ParticleGenerator(origins, texture_path)
+{
+    for (int i = 0; i < origins.size(); ++i)
+    {
+        particles.emplace_back(Particle(origins[i], glm::vec3(10,25,10), glm::vec3(0, -2, 0), glm::vec4(2, 2, 2, 1), 0.4));
+        particles[i].life += (((std::rand() % 100)) / 50.0f - 1.f) * 1;
+    }
+}
+
+void SnowParticleGenerator::update(float delta_time, float total_time)
+{
+    // Reset dead particles
+    int dead_id = get_first_dead();
+    if (dead_id != -1)
+        particles[dead_id].init(origins[dead_id], glm::vec3(10,25,10), glm::vec3(0,-2,0), glm::vec4(2, 2, 2, 1), 0.4);
+
+    // Update values
+    for (int i = 0; i < particles.size(); ++i)
+    {
+        Particle& p = particles[i];
+        p.life -= delta_time * 0.03; // reduce life
+        if (p.life > 0)
+        {
+            p.velocity.x = cos(total_time / 2 + i / 3.14) * 0.6;
+            p.velocity.z = sin(total_time / 2 + i / 2) * 0.6;
+            p.position += p.velocity * delta_time;
+            p.color.a = p.life * 4;
+        }
+    }
+}
+
+SnowParticleGenerator init_snow_particle_generator()
+{
+    std::vector<glm::vec3> origins;
+    for (int i = -50; i < 50; i += 5)
+    {
+        for (int j = -50; j < 50; j += 5)
+            origins.emplace_back(glm::vec3(i, 70, j));
+    }
+    std::cout << origins.size() << " snow origins" << std::endl;
+    return SnowParticleGenerator(origins, "../models/particle/snow.png");
 }

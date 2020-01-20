@@ -11,12 +11,13 @@ out VS_OUT
 
 uniform mat4 projection;
 uniform mat4 view;
+
 uniform vec3 offset;
 uniform vec4 color;
+uniform float scale;
 
 void main()
 {
-    const float scale = 0.4;
     vs_out.tex_coords = tex_coords;
     vs_out.color = color;
     gl_ClipDistance[0] = 0;
