@@ -588,6 +588,8 @@ int main()
         glUseProgram(screen_program.program_id);
         // set uniforms
         set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
+        screen_program.set_bool("ice_age", ice_age);
+        screen_program.set_float("ice_time", ice_time);
         // Draw
         if (amount % 2 == 0)
             other_textures = {scene_fbo.color_textures[0], ping_pong2.color_textures[0]};
