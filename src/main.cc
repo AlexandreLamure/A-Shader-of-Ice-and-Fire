@@ -319,6 +319,8 @@ int main()
         // set uniforms
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, 1, 0, -water_h+0.5});
         volcano_program.set_mat4("model", model_mat);
+        volcano_program.set_vec3("water_limits", water_limits);
+        volcano_program.set_float("ice_time", ice_time);
         // Draw
         volcano.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
@@ -404,6 +406,8 @@ int main()
         // set uniforms
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, -1, 0, water_h+1});
         volcano_program.set_mat4("model", model_mat);
+        volcano_program.set_vec3("water_limits", water_limits);
+        volcano_program.set_float("ice_time", ice_time);
         // Draw
         volcano.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
@@ -439,6 +443,7 @@ int main()
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
         volcano_program.set_mat4("model", model_mat);
         volcano_program.set_vec3("water_limits", water_limits);
+        volcano_program.set_float("ice_time", ice_time);
         // Draw
         volcano.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);

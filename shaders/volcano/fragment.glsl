@@ -60,11 +60,13 @@ uniform sampler2D texture_normal1;
 uniform float total_time;
 uniform vec3 camera_pos;
 uniform vec3 water_limits;
+uniform float ice_time;
 
 float get_ice_state(vec4 position);
 float get_ice_wave(float ice_state);
 PointLight ice_point_light_colorize(PointLight light, vec4 position);
 
+float snoise(vec3 v);
 
 vec3 compute_dir_light(DirLight light, Material material, vec3 normal, vec3 camera_dir)
 {
@@ -132,6 +134,19 @@ vec3 compute_lights(Material material, vec3 normal)
     return light_color;
 }
 
+vec3 compute_snow()
+{
+    // Snow pattern
+    float snow = snoise(fs_in.pos.xyz);
+    // Increase size over time
+    snow = snow - 1 + clamp(ice_time*0.01,0,1.2);
+    // Avoid too much bloom
+    snow = clamp(snow, 0, 0.95);
+
+    vec3 color = vec3(snow, snow, snow);
+    float ice_coef = clamp(get_ice_state(fs_in.pos), 0, 0.5)*2;
+    return color * ice_coef;
+}
 
 void main()
 {
@@ -152,7 +167,15 @@ void main()
 
     output_color = vec4(compute_lights(material, normal), diffuse.a);
 
+    vec3 snow = compute_snow();
+    // Decrease snow under water
+    snow *= clamp(fs_in.pos.y - water_limits.y+0.2, 0, 1);
+    output_color.rgb += snow;
+
     // Decrease light under water
     if (fs_in.pos.y < water_limits.y && !(fs_in.pos.z < water_limits.z && fs_in.pos.x > water_limits.x))
         output_color.rgb = mix(output_color.rgb, output_color.rgb * vec3(0.4, 0.42, 0.7), min(water_limits.y+0.1 - fs_in.pos.y, 1));
+
+
+
 }
