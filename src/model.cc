@@ -6,6 +6,7 @@
 
 Model::Model(const std::string& path, GLuint draw_mode)
 {
+    std::cout << "path : " << path << std::endl;
     this->draw_mode = draw_mode;
 
     // load model

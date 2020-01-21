@@ -16,7 +16,8 @@ add_executable(${BIN}
                src/cubemap.cc src/cubemap.hh
                src/paths.hh lib/irrKlang/irrKlang.h
                src/particle.cc src/particle.hh
-               src/main.cc)
+               src/sound.cc src/sound.hh
+               src/main.cc src/utils.hh)
 
 #OpenGL
 find_package(OpenGL REQUIRED)

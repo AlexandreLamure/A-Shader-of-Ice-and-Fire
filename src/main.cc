@@ -18,13 +18,16 @@
 #include "cubemap.hh"
 #include "paths.hh"
 #include "particle.hh"
+#include "sound.hh"
+#include "utils.hh"
 
 
 Camera camera;
 bool ice_age = false;
 float ice_time = 1.0f;
 
-irrklang::ISoundEngine *SoundEngine = irrklang::createIrrKlangDevice();
+irrklang::ISoundEngine *sound_engine = irrklang::createIrrKlangDevice();
+Sound sound;
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -79,7 +82,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_I && action == GLFW_PRESS)
     {
         if (!ice_age)
-            SoundEngine->play2D("../audio/zawarudo.ogg");
+            sound_engine->play2D("../audio/ice.ogg");
+        sound.pause(!ice_age);
 
         ice_age = !ice_age;
         ice_time = 0.0f;
@@ -149,6 +153,12 @@ void load_fbo(GLuint fbo_id)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void init_lava_lights(std::vector<PointLight>& point_lights, Light& color, std::vector<glm::vec3>& positions)
+{
+    for (int i = 0; i < positions.size(); i++)
+        point_lights.emplace_back(PointLight(color.ambient, color.diffuse, color.specular, positions[i]));
+    std::cout << "points lights size " << point_lights.size() << std::endl;
+}
 
 int main()
 {
@@ -199,7 +209,7 @@ int main()
     Model water("../models/water/waterLOD0.obj", GL_PATCHES);
     Model volcano("../models/volcan/volcan.obj", GL_TRIANGLES);
     Model lava("../models/lava/lava.obj", GL_PATCHES);
-    Model lava_particle("../models/lava/lava_particle.obj", GL_TRIANGLES);
+    Model lava_skeleton("../models/lava/lava_skeleton.obj", GL_TRIANGLES);
     Model cave_lava("../models/cave_lava/cave_lava.obj", GL_PATCHES);
     Model lamp1("../models/lamps/lamp1/lamp.obj", GL_TRIANGLES);
     Model lamp2("../models/lamps/lamp2/lamp.obj", GL_TRIANGLES);
@@ -235,17 +245,8 @@ int main()
     std::vector<PointLight> point_lights;
     Light lava_color1 = Light({0.f, 0.f, 0.f}, {10.0f, 1.0f, 0.5f}, {10.0f, 1.0f, 0.5f});
     Light lava_color2 = Light({0.f, 0.f, 0.f}, {1.4f, 0.4f, 0.f}, {1.4f, 0.4f, 0.f});
-    point_lights.push_back(PointLight(lava_color1.ambient, lava_color1.diffuse, lava_color1.specular, { 22, 19, -20}));
-    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {  5, 16, -20}));
-    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {-10,  9, -19}));
-    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {-21,  9, -15}));
-    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {  7, 19,  -7}));
-    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {  0,  9,  -6}));
-    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, {-15,  9,  -1}));
-    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, { 16, 19,   4}));
-    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, { 16,  7,   8}));
-    point_lights.push_back(PointLight(lava_color2.ambient, lava_color2.diffuse, lava_color2.specular, { 16,  7,  22}));
-
+    init_lava_lights(point_lights, lava_color1, Utils::lava_nexus);
+    init_lava_lights(point_lights, lava_color2, Utils::lava_skeleton_light);
 
 
     // To avoid redeclaration
@@ -258,11 +259,13 @@ int main()
     //model_mat = glm::translate(model_mat, glm::vec3(10.f, -25.f, -30.f));
     //model_mat = glm::rotate(model_mat, glm::radians(40.f), glm::vec3(0.f, 1.f, 0.f));
 
-    LavaParticleGenerator lava_generator = init_lava_particle_generator(lava_particle);
+    LavaParticleGenerator lava_generator = init_lava_particle_generator(lava_skeleton);
     SnowParticleGenerator snow_generator = init_snow_particle_generator();
 
     // SOUND
-    //SoundEngine->play2D("../audio/getout.ogg", GL_TRUE);
+    sound.init_lava_sound(sound_engine, 0.9, Utils::lava_nexus);
+    sound.init_lava_sound(sound_engine, 0.2, Utils::lava_skeleton_light);
+    sound.init_water_sound(sound_engine, 0.5, Utils::water_skeleton);
 
 
     // main loop
@@ -289,7 +292,10 @@ int main()
         // input
         process_input(window, delta_time);
 
+        // Update sounds
+        sound_engine->setListenerPosition({camera.pos.x,camera.pos.y,camera.pos.z}, {camera.front.x,camera.front.y,camera.front.z});
 
+        // Update particles
         if (ice_age)
             snow_generator.update(delta_time, total_time);
         else
@@ -597,7 +603,8 @@ int main()
 
 
     // clear sound
-    SoundEngine->drop();
+    sound_engine->drop();
+    sound.clear();
 
     // clear all previously allocated GLFW resources.
     glfwTerminate();
