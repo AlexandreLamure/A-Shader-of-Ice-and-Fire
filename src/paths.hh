@@ -11,6 +11,7 @@ namespace PATHS
     const std::vector<const char*> volcano_geometry{"../shaders/volcano/geometry.glsl"};
     const std::vector<const char*> volcano_frag{"../shaders/utils/ice.glsl",
                                                 "../shaders/utils/simplex.glsl",
+                                                "../shaders/utils/light.glsl",
                                                 "../shaders/volcano/fragment.glsl"};
 
 
@@ -37,6 +38,7 @@ namespace PATHS
     const std::vector<const char*> water_geometry{"../shaders/utils/ice.glsl",
                                                   "../shaders/water/geometry.glsl"};
     const std::vector<const char*> water_frag{"../shaders/utils/ice.glsl",
+                                              "../shaders/utils/light.glsl",
                                               "../shaders/water/fragment.glsl"};
 
 

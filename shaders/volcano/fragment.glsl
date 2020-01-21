@@ -64,75 +64,8 @@ uniform float ice_time;
 
 float get_ice_state(vec4 position);
 float get_ice_wave(float ice_state);
-PointLight ice_point_light_colorize(PointLight light, vec4 position);
-
 float snoise(vec3 v);
-
-vec3 compute_dir_light(DirLight light, Material material, vec3 normal, vec3 camera_dir)
-{
-    vec3 light_dir = normalize(-light.dir);
-    // diffuse shading
-    float diff = max(dot(normal, light_dir), 0.0);
-    // specular shading
-    vec3 reflect_dir = reflect(-light_dir, normal);
-    float spec = pow(max(dot(camera_dir, reflect_dir), 0.0), material.shininess);
-    // combine results
-    vec3 ambient  = light.ambient  * material.ambient;
-    vec3 diffuse  = light.diffuse  * diff * material.diffuse;
-    vec3 specular = light.specular * spec * material.specular;
-    return (ambient + diffuse + specular);
-}
-
-vec3 compute_point_light(PointLight light, Material material, vec3 normal, vec3 camera_dir)
-{
-    vec3 light_dir = normalize(light.pos - fs_in.pos.xyz);
-    // diffuse shading
-    float diff = max(dot(normal, light_dir), 0.0);
-    // specular shading
-    vec3 reflect_dir = reflect(-light_dir, normal);
-    float spec = pow(max(dot(camera_dir, reflect_dir), 0.0), material.shininess);
-    // attenuation
-    float distance = length(light.pos - fs_in.pos.xyz);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
-    // combine results
-    vec3 ambient  = light.ambient  * material.ambient;
-    vec3 diffuse  = light.diffuse  * diff * material.diffuse;
-    vec3 specular = light.specular * spec * material.specular;
-    ambient  *= attenuation;
-    diffuse  *= attenuation;
-    specular *= attenuation;
-    return (ambient + diffuse + specular);
-}
-
-vec3 compute_lights(Material material, vec3 normal)
-{
-    vec3 camera_dir = normalize(camera_pos - fs_in.pos.xyz);
-    vec3 light_color = vec3(0);
-
-    // Directional lighting
-    for(int i = 0; i < NB_DIR_LIGHTS; i++)
-        light_color += compute_dir_light(dir_lights[i], material, normal, camera_dir);
-    // Point lights
-    for(int i = 0; i < NB_LIGHT_MODELS; i++)
-    {
-        PointLight colorized_light = ice_point_light_colorize(point_lights[i], fs_in.pos);
-        light_color += compute_point_light(colorized_light, material, normal, camera_dir);
-    }
-    float ice_state = clamp(get_ice_state(fs_in.pos), 0, 1);
-    const float decrease_speed = 5;
-    ice_state = clamp(ice_state*decrease_speed,0,1);
-    if (ice_state != 1)
-    {
-        for (int i = NB_LIGHT_MODELS; i < NB_LIGHT_MODELS + NB_POINT_LIGHTS; i++)
-        {
-            PointLight colorized_light = ice_point_light_colorize(point_lights[i], fs_in.pos);
-            colorized_light.diffuse.r += colorized_light.diffuse.r * 0.3 * cos(total_time*1.5+fs_in.tex_coords.x*fs_in.tex_coords.y*3.14);
-            light_color += compute_point_light(colorized_light, material, normal, camera_dir) * (1 - ice_state);
-        }
-    }
-
-    return light_color;
-}
+vec3 compute_lights(Material material, vec3 normal, vec4 pos, vec2 tex_coords);
 
 vec3 compute_snow()
 {
@@ -165,7 +98,7 @@ void main()
     material.specular = vec3(texture(texture_specular1, fs_in.tex_coords));
     material.shininess = 20; //FIXME: get value from assimp
 
-    output_color = vec4(compute_lights(material, normal), diffuse.a);
+    output_color = vec4(compute_lights(material, normal, fs_in.pos, fs_in.tex_coords), diffuse.a);
 
     vec3 snow = compute_snow();
     // Decrease snow under water
@@ -175,7 +108,4 @@ void main()
     // Decrease light under water
     if (fs_in.pos.y < water_limits.y && !(fs_in.pos.z < water_limits.z && fs_in.pos.x > water_limits.x))
         output_color.rgb = mix(output_color.rgb, output_color.rgb * vec3(0.4, 0.42, 0.7), min(water_limits.y+0.1 - fs_in.pos.y, 1));
-
-
-
 }
