@@ -195,9 +195,9 @@ void SnowParticleGenerator::update(float delta_time, float total_time)
 SnowParticleGenerator init_snow_particle_generator()
 {
     std::vector<glm::vec3> origins;
-    for (int i = -50; i < 50; i += 5)
+    for (int i = -50; i < 50; i += 3)
     {
-        for (int j = -50; j < 50; j += 5)
+        for (int j = -50; j < 50; j += 3)
             origins.emplace_back(glm::vec3(i, 70, j));
     }
     std::cout << origins.size() << " snow origins" << std::endl;
