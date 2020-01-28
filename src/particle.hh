@@ -48,9 +48,12 @@ LavaParticleGenerator init_lava_particle_generator(const Model& lava);
 
 
 class SnowParticleGenerator : public ParticleGenerator {
+private:
+    float water_h;
+
 public:
-    SnowParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path);
+    SnowParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path, float water_h);
     void update(float delta_time, float total_time);
 };
 
-SnowParticleGenerator init_snow_particle_generator();
+SnowParticleGenerator init_snow_particle_generator(float water_h);

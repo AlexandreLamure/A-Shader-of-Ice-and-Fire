@@ -70,12 +70,20 @@ vec3 compute_lights(Material material, vec3 normal, vec4 pos, vec2 tex_coords);
 vec3 compute_snow()
 {
     // Snow pattern
-    float pattern_size = 0.95; // decrease to increase size
-    float snow = clamp(snoise(fs_in.pos.xyz*pattern_size), -1.1, 1);
+    // Octave 1
+    float pattern_size = 0.08; // decrease to increase size
+    float snow = clamp(snoise(fs_in.pos.xyz*pattern_size), 0, 0.2);
+    // Octave 2
+    pattern_size = 0.95;
+    snow += clamp(snoise(fs_in.pos.xyz*pattern_size), -0.1, 1);
+    // Octave 3
+    pattern_size = 3;
+    snow += clamp(snoise(fs_in.pos.xyz*pattern_size), -0.5, 0.5);
+
     // Increase size over time
-    snow = snow - 1 + clamp(ice_time*.01,0,2);
+    snow = snow - 1.8 + clamp(ice_time*.01,0,2.8);
     // Avoid too much bloom
-    snow = clamp(snow, 0, 0.97);
+    snow = clamp(snow, 0, 2);
 
     vec3 color = vec3(snow, snow, snow);
     float ice_coef = clamp(get_ice_state(fs_in.pos), 0, 0.5)*2;

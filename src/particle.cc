@@ -146,7 +146,7 @@ LavaParticleGenerator init_lava_particle_generator(const Model& lava)
     std::vector<glm::vec3> origins;
     for (const Mesh& mesh : lava.meshes)
     {
-        for (int i = 0; i < mesh.vertices.size(); i+=24)
+        for (int i = 0; i < mesh.vertices.size(); i+=20)
             origins.emplace_back(mesh.vertices[i].position);
     }
     std::cout << origins.size() << " lava origins" << std::endl;
@@ -160,7 +160,7 @@ LavaParticleGenerator init_lava_particle_generator(const Model& lava)
 
 // Snow Particle Generator ---------------------------------------------------------------------------------------------
 
-SnowParticleGenerator::SnowParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path)
+SnowParticleGenerator::SnowParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path, float water_h)
         : ParticleGenerator(origins, texture_path)
 {
     for (int i = 0; i < origins.size(); ++i)
@@ -168,6 +168,8 @@ SnowParticleGenerator::SnowParticleGenerator(std::vector<glm::vec3>& origins, co
         particles.emplace_back(Particle(origins[i], glm::vec3(10,25,10), glm::vec3(0, -2, 0), glm::vec4(2, 2, 2, 1), 0.3));
         particles[i].life += (((std::rand() % 100)) / 50.0f - 1.f) * 1;
     }
+
+    this->water_h = water_h;
 }
 
 void SnowParticleGenerator::update(float delta_time, float total_time)
@@ -181,7 +183,12 @@ void SnowParticleGenerator::update(float delta_time, float total_time)
     for (int i = 0; i < particles.size(); ++i)
     {
         Particle& p = particles[i];
-        p.life -= delta_time * 0.03; // reduce life
+        // reduce life
+        p.life -= delta_time * 0.03;
+        // Remove particles under water
+        if (p.position.y < water_h)
+            p.life = 0;
+
         if (p.life > 0)
         {
             p.velocity.x = cos(total_time / 2 + i / 3.14) * 0.6;
@@ -192,7 +199,7 @@ void SnowParticleGenerator::update(float delta_time, float total_time)
     }
 }
 
-SnowParticleGenerator init_snow_particle_generator()
+SnowParticleGenerator init_snow_particle_generator(float water_h)
 {
     std::vector<glm::vec3> origins;
     for (int i = -50; i < 50; i += 3)
@@ -201,5 +208,5 @@ SnowParticleGenerator init_snow_particle_generator()
             origins.emplace_back(glm::vec3(i, 70, j));
     }
     std::cout << origins.size() << " snow origins" << std::endl;
-    return SnowParticleGenerator(origins, "../models/particle/snow.png");
+    return SnowParticleGenerator(origins, "../models/particle/snow.png", water_h);
 }

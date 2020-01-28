@@ -260,7 +260,7 @@ int main()
     //model_mat = glm::rotate(model_mat, glm::radians(40.f), glm::vec3(0.f, 1.f, 0.f));
 
     LavaParticleGenerator lava_generator = init_lava_particle_generator(lava_skeleton);
-    SnowParticleGenerator snow_generator = init_snow_particle_generator();
+    SnowParticleGenerator snow_generator = init_snow_particle_generator(water_h);
 
     // SOUND
     sound.init_lava_sound(sound_engine, 0.9, Utils::lava_nexus);
