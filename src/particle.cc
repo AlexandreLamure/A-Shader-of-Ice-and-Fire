@@ -34,7 +34,7 @@ ParticleGenerator::ParticleGenerator(std::vector<glm::vec3>& origins, const std:
     this->origins = origins;
 
     texture_id = Model::texture_from_file(texture_path.c_str(), ".");
-
+/*
     float particle_quad[] = {
             // positions        tex coords
             -0.5f,  0.5f, 0.f,   0.0f, 1.0f,
@@ -62,6 +62,24 @@ ParticleGenerator::ParticleGenerator(std::vector<glm::vec3>& origins, const std:
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
     glBindVertexArray(0);
+    */
+
+    float pos[1] = { 0 };
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(pos), pos, GL_STATIC_DRAW);
+
+    // vertex positions
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+
+    glBindVertexArray(0);
+
 }
 
 int ParticleGenerator::get_first_dead()

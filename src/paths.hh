@@ -62,7 +62,7 @@ namespace PATHS
     const std::vector<const char*> particle_vertex{"../shaders/particle/vertex.glsl"};
     const std::vector<const char*> particle_tc{};
     const std::vector<const char*> particle_te{};
-    const std::vector<const char*> particle_geometry{};
+    const std::vector<const char*> particle_geometry{"../shaders/particle/geometry.glsl"};
     const std::vector<const char*> particle_frag{"../shaders/particle/fragment.glsl"};
 
 

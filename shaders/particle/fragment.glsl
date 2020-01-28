@@ -1,16 +1,16 @@
 #version 450
 
-in VS_OUT
+in GS_OUT
 {
     vec2 tex_coords;
-    vec4 color;
 } fs_in;
 
 out vec4 output_color;
 
 uniform sampler2D sprite;
+uniform vec4 color;
 
 void main()
 {
-    output_color = fs_in.color * texture(sprite, fs_in.tex_coords);
+    output_color = color * texture(sprite, fs_in.tex_coords);
 }
