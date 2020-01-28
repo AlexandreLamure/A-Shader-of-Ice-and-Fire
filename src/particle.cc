@@ -34,35 +34,6 @@ ParticleGenerator::ParticleGenerator(std::vector<glm::vec3>& origins, const std:
     this->origins = origins;
 
     texture_id = Model::texture_from_file(texture_path.c_str(), ".");
-/*
-    float particle_quad[] = {
-            // positions        tex coords
-            -0.5f,  0.5f, 0.f,   0.0f, 1.0f,
-            0.5f, -0.5f, 0.f,   1.0f, 0.0f,
-            -0.5f, -0.5f, 0.f,   0.0f, 0.0f,
-
-            -0.5f,  0.5f, 0.f,   0.0f, 1.0f,
-            0.5f,  0.5f, 0.f,   1.0f, 1.0f,
-            0.5f, -0.5f, 0.f,   1.0f, 0.0f
-    };
-
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(particle_quad), particle_quad, GL_STATIC_DRAW);
-
-    // vertex positions
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    // vertex texture coords
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-
-    glBindVertexArray(0);
-    */
 
     float pos[1] = { 0 };
 
@@ -106,6 +77,11 @@ int ParticleGenerator::get_first_dead()
 
 void ParticleGenerator::draw(Program& program)
 {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(VAO);
+
     for (Particle& p : particles)
     {
         if (p.life > 0.0f)
@@ -113,16 +89,12 @@ void ParticleGenerator::draw(Program& program)
             program.set_vec3("offset", p.position);
             program.set_vec4("color", p.color);
             program.set_float("scale", p.scale);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture_id);
             program.set_int("sprite", 0);
-            glActiveTexture(GL_TEXTURE0);
-            glBindVertexArray(VAO);
+
             glDrawArrays(GL_TRIANGLES, 0, 6);
-            glBindVertexArray(0);
         }
     }
+    glBindVertexArray(0);
 }
 
 
