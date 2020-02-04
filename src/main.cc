@@ -197,6 +197,8 @@ int main()
     Program bloom_program(PATHS::bloom_vertex, PATHS::bloom_tc, PATHS::bloom_te, PATHS::bloom_geometry, PATHS::bloom_frag);
     Program blur_program(PATHS::blur_vertex, PATHS::blur_tc, PATHS::blur_te, PATHS::blur_geometry, PATHS::blur_frag);
     Program screen_program(PATHS::screen_vertex, PATHS::screen_tc, PATHS::screen_te, PATHS::screen_geometry, PATHS::screen_frag);
+    // Compute shaders
+    Program compute_program(PATHS::compute);
     // -----------------------------------------------------------------------------------------------------------------
 
 
@@ -259,8 +261,8 @@ int main()
     //model_mat = glm::translate(model_mat, glm::vec3(10.f, -25.f, -30.f));
     //model_mat = glm::rotate(model_mat, glm::radians(40.f), glm::vec3(0.f, 1.f, 0.f));
 
-    LavaParticleGenerator lava_generator = init_lava_particle_generator(lava_skeleton);
-    SnowParticleGenerator snow_generator = init_snow_particle_generator(water_h);
+    ParticleGenerator lava_generator = init_lava_particle_generator(lava_skeleton);
+    ParticleGenerator snow_generator = init_snow_particle_generator();
 
     // SOUND
     sound.init_lava_sound(sound_engine, 0.9, Utils::lava_nexus);
@@ -297,9 +299,18 @@ int main()
 
         // Update particles
         if (ice_age)
-            snow_generator.update(delta_time, total_time);
+        {
+            glUseProgram(compute_program.program_id);
+            compute_program.set_float("water_h", water_h);
+            snow_generator.compute(compute_program, delta_time, total_time);
+            glUseProgram(0);
+        }
         else
-            lava_generator.update(delta_time, total_time);
+        {
+            glUseProgram(compute_program.program_id);
+            lava_generator.compute(compute_program, delta_time, total_time);
+            glUseProgram(0);
+        }
 
 
         // =============================================================================================================

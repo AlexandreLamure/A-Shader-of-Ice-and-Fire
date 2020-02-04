@@ -30,7 +30,7 @@ public:
     Program()
         : program_id(0)
     {};
-
+    Program(const std::vector<const char*>& compute_paths);
 
     void set_bool(const std::string &name, bool value) const;
     void set_int(const std::string &name, int value) const;

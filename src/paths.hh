@@ -89,4 +89,7 @@ namespace PATHS
     const std::vector<const char*> screen_geometry{};
     const std::vector<const char*> screen_frag{"../shaders/screen/fragment.glsl"};
 
+
+    const std::vector<const char*> compute{"../shaders/utils/misc.glsl",
+                                           "../shaders/particle/compute.glsl"};
 }

@@ -188,6 +188,53 @@ Program::Program(const std::vector<const char*>& vertex_paths,
     link(vertex_shaders, tcontrol_shaders, teval_shaders, geometry_shaders, fragment_shaders);
 }
 
+Program::Program(const std::vector<const char*>& compute_paths)
+{
+    std::vector<const char*> compute_srcs(compute_paths.size());
+    for (int i = 0; i < compute_paths.size(); ++i)
+        compute_srcs[i] = load(compute_paths[i]);
+
+    std::vector<GLuint> compute_shaders(compute_srcs.size());
+    for (int i = 0; i < compute_srcs.size(); ++i)
+    {
+        compute_shaders[i] = glCreateShader(GL_COMPUTE_SHADER);
+        TEST_OPENGL_ERROR();
+    }
+
+
+    for (int i = 0; i < compute_shaders.size(); ++i)
+        compile(compute_shaders[i], compute_srcs[i], compute_paths[i]);
+
+    program_id = glCreateProgram();
+    TEST_OPENGL_ERROR();
+
+    for (auto compute_shader : compute_shaders)
+    {
+        glAttachShader(program_id, compute_shader);
+        TEST_OPENGL_ERROR();
+    }
+
+    glLinkProgram(program_id);
+    TEST_OPENGL_ERROR();
+
+    // check for linking errors
+    int success;
+    char infoLog[512];
+    glGetProgramiv(program_id, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        glGetProgramInfoLog(program_id, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::PROGRAM::COMPUTE_SHADER::LINKING_FAILED\n" << infoLog << std::endl;
+        throw std::exception();
+    }
+
+    for (auto compute_shader : compute_shaders)
+    {
+        glDetachShader(program_id, compute_shader);
+        glDeleteShader(compute_shader);
+    }
+}
+
 void Program::set_bool(const std::string &name, bool value) const
 {
     glUniform1i(glGetUniformLocation(program_id, name.c_str()), (int)value);

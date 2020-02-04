@@ -7,53 +7,34 @@
 #include "mesh.hh"
 #include "model.hh"
 
-class Particle {
-public:
-    glm::vec3 position;
+
+class ParticleGenerator {
+private:
+    GLuint VAO;
+    GLuint origin_buffer;
+    GLuint position_buffer;
+    GLuint velocity_buffer;
+    GLuint life_buffer;
+
+    unsigned int texture_id;
+    std::vector<glm::vec4> origins;
+
+    glm::vec3 randomness;
     glm::vec3 velocity;
     glm::vec4 color;
     float scale;
-    float life;
-
-    explicit Particle(const glm::vec3& origin, glm::vec3 randomness, glm::vec3 velocity, glm::vec4 color, float scale);
-    void init(const glm::vec3& origin, glm::vec3 randomness, glm::vec3 velocity, glm::vec4 color, float scale);
-};
-
-
-class ParticleGenerator {
-protected:
-    std::vector<Particle> particles;
-    unsigned int texture_id;
-    unsigned int VAO, VBO;
-    int last_used;
-    std::vector<glm::vec3> origins;
-
-    int get_first_dead();
+    float death_speed;
+    float fade_speed;
+    float spin_range;
 
 public:
-    ParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path);
+    ParticleGenerator(std::vector<glm::vec4>& origins, const std::string& texture_path,
+                      const glm::vec3& randomness, const glm::vec3& velocity, const glm::vec4& color,
+                      float scale, float death_speed, float fade_speed, float spin_range);
 
-    virtual void update(float delta_time, float total_time) = 0;
+    void compute(Program program, float delta_time, float total_time);
     void draw(Program& program);
 };
 
-
-class LavaParticleGenerator : public ParticleGenerator {
-public:
-    LavaParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path);
-    void update(float delta_time, float total_time);
-};
-
-LavaParticleGenerator init_lava_particle_generator(const Model& lava);
-
-
-class SnowParticleGenerator : public ParticleGenerator {
-private:
-    float water_h;
-
-public:
-    SnowParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path, float water_h);
-    void update(float delta_time, float total_time);
-};
-
-SnowParticleGenerator init_snow_particle_generator(float water_h);
+ParticleGenerator init_lava_particle_generator(const Model& lava);
+ParticleGenerator init_snow_particle_generator();

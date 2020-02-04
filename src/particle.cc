@@ -3,76 +3,86 @@
 #include "model.hh"
 
 
-// Particle ------------------------------------------------------------------------------------------------------------
-
-Particle::Particle(const glm::vec3& origin, glm::vec3 randomness, glm::vec3 velocity, glm::vec4 color, float scale)
+ParticleGenerator::ParticleGenerator(std::vector<glm::vec4>& origins, const std::string& texture_path,
+                                     const glm::vec3& randomness, const glm::vec3& velocity, const glm::vec4& color,
+                                     float scale, float death_speed, float fade_speed, float spin_range)
 {
-    init(origin, randomness, velocity, color, scale);
-}
-
-void Particle::init(const glm::vec3& origin, glm::vec3 randomness, glm::vec3 velocity, glm::vec4 color, float scale)
-{
-    // positions [-1, 1]
-    float random_x = (((std::rand() % 100)) / 50.f - 1.f) * randomness.x;
-    float random_y = (((std::rand() % 100)) / 50.f - 1.f) * randomness.y;
-    float random_z = (((std::rand() % 100)) / 50.f - 1.f) * randomness.z;
-    position = origin + glm::vec3(random_x, random_y, random_z);
+    this->origins = origins;
+    this->randomness = randomness;
     this->velocity = velocity;
     this->color = color;
     this->scale = scale;
-    life = 1.0f;
-}
-
-
-
-
-// Particle Generator --------------------------------------------------------------------------------------------------
-
-ParticleGenerator::ParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path)
-{
-    last_used = 0;
-    this->origins = origins;
+    this->death_speed = death_speed;
+    this->fade_speed = fade_speed;
+    this->spin_range = spin_range;
 
     texture_id = Model::texture_from_file(texture_path.c_str(), ".");
 
-    float pos[1] = { 0 };
+    std::vector<glm::vec4> positions = std::vector<glm::vec4>(origins.size());
+    std::vector<glm::vec4> velocities = std::vector<glm::vec4>(origins.size());
+    std::vector<float> lives = std::vector<float>(origins.size());
+    for (int i = 0; i < origins.size(); ++i)
+    {
+        // positions [-1, 1] * randomness
+        float random_x = ((std::rand() % 100) / 50.f - 1.f) * randomness.x;
+        float random_y = ((std::rand() % 100) / 50.f - 1.f) * randomness.y;
+        float random_z = ((std::rand() % 100) / 50.f - 1.f) * randomness.z;
 
+        positions[i] = origins[i] + glm::vec4(random_x, random_y, random_z, 0);
+        velocities[i] = glm::vec4(velocity, -1);
+        lives[i] = 1.0f + ((std::rand() % 100) / 100.f - 0.5f);
+    }
+
+    glGenBuffers(1, &origin_buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, origin_buffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, origins.size() * sizeof(glm::vec4), &(origins[0]), GL_STATIC_COPY);
+
+    glGenBuffers(1, &position_buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, position_buffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, origins.size() * sizeof(glm::vec4), &(positions[0]), GL_DYNAMIC_COPY);
+
+    glGenBuffers(1, &velocity_buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, velocity_buffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, origins.size() * sizeof(glm::vec4), &(velocities[0]), GL_DYNAMIC_COPY);
+
+    glGenBuffers(1, &life_buffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, life_buffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, origins.size() * sizeof(float), &(lives[0]), GL_DYNAMIC_COPY);
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+
+    // Define VAO to allow drawing
     glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
     glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(pos), pos, GL_STATIC_DRAW);
-
-    // vertex positions
+    glBindBuffer(GL_ARRAY_BUFFER, position_buffer);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, life_buffer);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
     glBindVertexArray(0);
-
 }
 
-int ParticleGenerator::get_first_dead()
+void ParticleGenerator::compute(Program program, float delta_time, float total_time)
 {
-    // Search from last used particle
-    for (int i = last_used; i < particles.size(); ++i){
-        if (particles[i].life <= 0)
-        {
-            last_used = i;
-            return i;
-        }
-    }
-    // Otherwise, do a linear search
-    for (int i = 0; i < last_used; ++i)
-    {
-        if (particles[i].life <= 0)
-        {
-            last_used = i;
-            return i;
-        }
-    }
-    return -1;
+    program.set_float("delta_time", delta_time);
+    program.set_float("total_time", total_time);
+    program.set_vec3("randomness", randomness);
+    program.set_vec3("start_velocity", velocity);
+    program.set_float("death_speed", death_speed);
+    program.set_float("spin_range", spin_range);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, origin_buffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, position_buffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, velocity_buffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, life_buffer);
+
+    glDispatchCompute(std::ceil(origins.size() / 128.f), 1, 1);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
 void ParticleGenerator::draw(Program& program)
@@ -80,123 +90,55 @@ void ParticleGenerator::draw(Program& program)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture_id);
     glActiveTexture(GL_TEXTURE0);
+
     glBindVertexArray(VAO);
 
-    for (Particle& p : particles)
-    {
-        if (p.life > 0.0f)
-        {
-            program.set_vec3("offset", p.position);
-            program.set_vec4("color", p.color);
-            program.set_float("scale", p.scale);
-            program.set_int("sprite", 0);
+    program.set_vec4("color", color);
+    program.set_float("scale", scale);
+    program.set_float("fade_speed", fade_speed);
+    program.set_int("sprite", 0);
 
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-        }
-    }
-    glBindVertexArray(0);
+    // Send 'nb_origins' points. The geometry shader change the draw mode to triangle_strip.
+    // For example, 100 particles will send 100 GL_POINTS and draw 600 vertices (two triangles per particle).
+    glDrawArrays(GL_POINTS, 0, origins.size());
 }
 
-
-
-
-// Lava Particle Generator ---------------------------------------------------------------------------------------------
-
-LavaParticleGenerator::LavaParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path)
-    : ParticleGenerator(origins, texture_path)
+ParticleGenerator init_lava_particle_generator(const Model& lava)
 {
-    for (int i = 0; i < origins.size(); ++i)
-        particles.emplace_back(Particle(origins[i], glm::vec3(0.8), glm::vec3(0, 1, 0), glm::vec4(6, 3, 3, 1), 0.3));
-}
-
-void LavaParticleGenerator::update(float delta_time, float total_time)
-{
-    // Reset dead particles
-    int dead_id = get_first_dead();
-    if (dead_id != -1)
-        particles[dead_id].init(origins[dead_id], glm::vec3(0.8), glm::vec3(0,1,0), glm::vec4(6, 3, 3, 1), 0.3);
-
-    // Update values
-    for (int i = 0; i < particles.size(); ++i)
-    {
-        Particle& p = particles[i];
-        p.life -= delta_time * 0.8; // reduce life
-        if (p.life > 0)
-        {
-            p.velocity.x = cos(total_time / 2 + i / 3.14) * 0.6;
-            p.velocity.z = sin(total_time / 2 + i / 2) * 0.6;
-            p.position += p.velocity * delta_time;
-            p.color.a = p.life * 1.5;
-        }
-    }
-}
-
-LavaParticleGenerator init_lava_particle_generator(const Model& lava)
-{
-    std::vector<glm::vec3> origins;
+    std::vector<glm::vec4> origins;
     for (const Mesh& mesh : lava.meshes)
     {
-        for (int i = 0; i < mesh.vertices.size(); i+=20)
-            origins.emplace_back(mesh.vertices[i].position);
+        for (int i = 0; i < mesh.vertices.size(); i+=24)
+            origins.emplace_back(glm::vec4(mesh.vertices[i].position, -1));
     }
     std::cout << origins.size() << " lava origins" << std::endl;
-    return LavaParticleGenerator(origins, "../models/particle/lava.png");
+
+    return ParticleGenerator(origins, "../models/particle/lava.png",
+                             glm::vec3(0.8),           // randomness
+                             glm::vec3(0, 0.2, 0),     // velocity
+                             glm::vec4(6, 3, 3, 1),    // color
+                             0.15,                     // scale
+                             0.2,                      // death_speed
+                             1.5,                      // fade_speed
+                             0.2);                     // spin_range
 }
 
-
-
-
-
-
-// Snow Particle Generator ---------------------------------------------------------------------------------------------
-
-SnowParticleGenerator::SnowParticleGenerator(std::vector<glm::vec3>& origins, const std::string& texture_path, float water_h)
-        : ParticleGenerator(origins, texture_path)
+ParticleGenerator init_snow_particle_generator()
 {
-    for (int i = 0; i < origins.size(); ++i)
-    {
-        particles.emplace_back(Particle(origins[i], glm::vec3(10,25,10), glm::vec3(0, -2, 0), glm::vec4(2, 2, 2, 1), 0.3));
-        particles[i].life += (((std::rand() % 100)) / 50.0f - 1.f) * 1;
-    }
-
-    this->water_h = water_h;
-}
-
-void SnowParticleGenerator::update(float delta_time, float total_time)
-{
-    // Reset dead particles
-    int dead_id = get_first_dead();
-    if (dead_id != -1)
-        particles[dead_id].init(origins[dead_id], glm::vec3(10,25,10), glm::vec3(0,-2,0), glm::vec4(2, 2, 2, 1), 0.3);
-
-    // Update values
-    for (int i = 0; i < particles.size(); ++i)
-    {
-        Particle& p = particles[i];
-        // reduce life
-        p.life -= delta_time * 0.03;
-        // Remove particles under water
-        if (p.position.y < water_h)
-            p.life = 0;
-
-        if (p.life > 0)
-        {
-            p.velocity.x = cos(total_time / 2 + i / 3.14) * 0.6;
-            p.velocity.z = sin(total_time / 2 + i / 2) * 0.6;
-            p.position += p.velocity * delta_time;
-            p.color.a = p.life * 4;
-        }
-    }
-}
-
-SnowParticleGenerator init_snow_particle_generator(float water_h)
-{
-    std::vector<glm::vec3> origins;
+    std::vector<glm::vec4> origins;
     for (int i = -50; i < 50; i += 3)
     {
         for (int j = -50; j < 50; j += 3)
-            origins.emplace_back(glm::vec3(i, 70, j));
+            origins.emplace_back(glm::vec4(i, 70, j, -1));
     }
     std::cout << origins.size() << " snow origins" << std::endl;
-    return SnowParticleGenerator(origins, "../models/particle/snow.png", water_h);
+
+    return ParticleGenerator(origins, "../models/particle/snow.png",
+                             glm::vec3(10,25,10),      // randomness
+                             glm::vec3(0, -2, 0),      // velocity
+                             glm::vec4(2, 2, 2, 1),    // color
+                             0.2,                     // scale
+                             0.03,                      // death_speed
+                             2,                      // fade_speed
+                             0.6);                     // spin_range
 }
