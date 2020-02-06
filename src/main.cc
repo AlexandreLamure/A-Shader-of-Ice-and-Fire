@@ -26,6 +26,20 @@ Camera camera;
 bool ice_age = false;
 float ice_time = 1.0f;
 
+// for soutenance
+int level = 0;
+#define CUBEMAP_LEVEL 1
+#define LIGHT_LEVEL 2
+#define WATER_LEVEL 3
+#define REFRACT_LEVEL 4
+#define REFLECT_LEVEL 5
+#define LAVA_LEVEL 6
+#define BLOOM_LEVEL 7
+#define PARTICLE_LEVEL 8
+#define SMOKE_LEVEL 9
+bool biohazard = false;
+
+
 irrklang::ISoundEngine *sound_engine = irrklang::createIrrKlangDevice();
 Sound sound;
 
@@ -88,6 +102,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         ice_age = !ice_age;
         ice_time = 0.0f;
     }
+
+    if (key == GLFW_KEY_P && action == GLFW_PRESS)
+        level++;
+    if (key == GLFW_KEY_SEMICOLON && action == GLFW_PRESS)
+        level--;
 }
 
 
@@ -128,10 +147,42 @@ void set_uniforms(Program& program, int window_w, int window_h, float total_time
     // set lights
     for (int i = 0; i < dir_lights.size(); ++i)
         dir_lights[i].set(program, i);
-    for (int i = 0; i < light_models.size(); ++i)
-        light_models[i].point_light.set(program, i);
-    for (int i = 0; i < point_lights.size(); ++i)
-        point_lights[i].set(program, i + light_models.size());
+    if (level >= LIGHT_LEVEL)
+    {
+        for (int i = 0; i < light_models.size(); ++i)
+            light_models[i].point_light.set(program, i);
+    }
+    else
+    {
+        for (int i = 0; i < light_models.size(); ++i)
+        {
+            program.set_vec3("point_lights[" + std::to_string(i) + "].ambient", {0.1,0.1,0.1});
+            program.set_vec3("point_lights[" + std::to_string(i) + "].diffuse", {0.1,0.1,0.1});
+            program.set_vec3("point_lights[" + std::to_string(i) + "].specular", {0.1,0.1,0.1});
+            program.set_vec3("point_lights[" + std::to_string(i) + "].pos", {0,1000,0});
+            program.set_float("point_lights[" + std::to_string(i) + "].constant", 0.1);
+            program.set_float("point_lights[" + std::to_string(i) + "].linear", 0.1);
+            program.set_float("point_lights[" + std::to_string(i) + "].quadratic", 0.1);
+        }
+    }
+    if (level >= LAVA_LEVEL)
+    {
+        for (int i = 0; i < point_lights.size(); ++i)
+            point_lights[i].set(program, i + light_models.size());
+    }
+    else
+    {
+        for (int i = light_models.size(); i < light_models.size() + point_lights.size(); ++i)
+        {
+            program.set_vec3("point_lights[" + std::to_string(i) + "].ambient", {0.1,0.1,0.1});
+            program.set_vec3("point_lights[" + std::to_string(i) + "].diffuse", {0.1,0.1,0.1});
+            program.set_vec3("point_lights[" + std::to_string(i) + "].specular", {0.1,0.1,0.1});
+            program.set_vec3("point_lights[" + std::to_string(i) + "].pos", {0,1000,0});
+            program.set_float("point_lights[" + std::to_string(i) + "].constant", 0.1);
+            program.set_float("point_lights[" + std::to_string(i) + "].linear", 0.1);
+            program.set_float("point_lights[" + std::to_string(i) + "].quadratic", 0.1);
+        }
+    }
 
     program.set_vec3("camera_pos", camera.pos);
     program.set_vec2("mouse_pos", camera.mouse_pos);
@@ -313,7 +364,7 @@ int main()
             glUseProgram(compute_program.program_id);
             compute_program.set_float("water_h", water_h);
             lava_generator.compute(compute_program, delta_time, total_time);
-            //smoke_generator.compute(compute_program, delta_time, total_time);
+            smoke_generator.compute(compute_program, delta_time, total_time);
             moth_generator.compute(compute_program, delta_time, total_time);
             light_moth_generator.compute(compute_program, delta_time, total_time);
             glUseProgram(0);
@@ -345,78 +396,90 @@ int main()
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-        // LAVA --------------------------------------------------------------------------------------------------------
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glUseProgram(lava_program.program_id);
-        // set uniforms
-        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, 1, 0, -water_h+0.5});
-        lava_program.set_mat4("model", model_mat);
-        // Draw
-        lava.draw(lava_program, nullptr);
-        cave_lava.draw(lava_program, nullptr);
-        // -------------------------------------------------------------------------------------------------------------
-
-        // LIGHTS -------------------------------------------------------------------------------------------
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glUseProgram(light_program.program_id);
-        // set uniforms
-        set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, 1, 0, -water_h+0.5});
-        light_program.set_mat4("model", model_mat);
-        // Draw
-        light_program.set_vec3("light_color", light1.point_light.diffuse);
-        light1.draw(light_program, nullptr);
-        light_program.set_vec3("light_color", light2.point_light.diffuse);
-        light2.draw(light_program, nullptr);
-        // -------------------------------------------------------------------------------------------------------------
-
-        // CUBEMAP -----------------------------------------------------------------------------------------------------
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glUseProgram(cubemap_program.program_id);
-        // set uniforms
-        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
-        view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
-        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
-        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
-        cubemap_program.set_mat4("view", view);
-        cubemap_program.set_mat4("projection", projection);
-        // Draw
-        cubemap.draw(cubemap_program);
-        // -------------------------------------------------------------------------------------------------------------
-
-        // PARTICLES ---------------------------------------------------------------------------------------------------
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glUseProgram(particle_program.program_id);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDepthMask(GL_FALSE);
-        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
-        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
-        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
-        particle_program.set_mat4("view", view);
-        particle_program.set_mat4("projection", projection);
-        if (ice_age)
-            snow_generator.draw(particle_program);
-        else
+        if (level >= LAVA_LEVEL)
         {
-            lava_generator.draw(particle_program);
-            //smoke_generator.draw(particle_program);
-            moth_generator.draw(particle_program);
-            light_moth_generator.draw(particle_program);
+            // LAVA --------------------------------------------------------------------------------------------------------
+            glEnable(GL_DEPTH_TEST);
+            glEnable(GL_CULL_FACE);
+            glUseProgram(lava_program.program_id);
+            // set uniforms
+            set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, 1, 0, -water_h+0.5});
+            lava_program.set_mat4("model", model_mat);
+            // Draw
+            lava.draw(lava_program, nullptr);
+            cave_lava.draw(lava_program, nullptr);
+            // -------------------------------------------------------------------------------------------------------------
         }
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDisable(GL_BLEND);
-        glDepthMask(GL_TRUE);
-        // -------------------------------------------------------------------------------------------------------------
+
+        if (level >= LIGHT_LEVEL)
+        {
+            // LIGHTS -------------------------------------------------------------------------------------------
+            glEnable(GL_DEPTH_TEST);
+            glEnable(GL_CULL_FACE);
+            glUseProgram(light_program.program_id);
+            // set uniforms
+            set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, 1, 0, -water_h+0.5});
+            light_program.set_mat4("model", model_mat);
+            // Draw
+            light_program.set_vec3("light_color", light1.point_light.diffuse);
+            light1.draw(light_program, nullptr);
+            light_program.set_vec3("light_color", light2.point_light.diffuse);
+            light2.draw(light_program, nullptr);
+            // -------------------------------------------------------------------------------------------------------------
+        }
+
+        if (level >= CUBEMAP_LEVEL)
+        {
+            // CUBEMAP -----------------------------------------------------------------------------------------------------
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
+            glUseProgram(cubemap_program.program_id);
+            // set uniforms
+            view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+            view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
+            window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+            projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+            cubemap_program.set_mat4("view", view);
+            cubemap_program.set_mat4("projection", projection);
+            // Draw
+            cubemap.draw(cubemap_program);
+            // -------------------------------------------------------------------------------------------------------------
+        }
+
+        if (level >= PARTICLE_LEVEL)
+        {
+            // PARTICLES ---------------------------------------------------------------------------------------------------
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
+            glUseProgram(particle_program.program_id);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glDepthMask(GL_FALSE);
+            view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+            window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+            projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+            particle_program.set_mat4("view", view);
+            particle_program.set_mat4("projection", projection);
+            if (ice_age)
+                snow_generator.draw(particle_program);
+            else
+            {
+                lava_generator.draw(particle_program);
+                if (level >= SMOKE_LEVEL)
+                    smoke_generator.draw(particle_program);
+                moth_generator.draw(particle_program);
+                light_moth_generator.draw(particle_program);
+            }
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glDisable(GL_BLEND);
+            glDepthMask(GL_TRUE);
+            // -------------------------------------------------------------------------------------------------------------
+        }
 
         // reset camera
         camera.pos.y += distance;
         camera.invert_pitch();
         // -------------------------------------------------------------------------------------------------------------
-
 
 
 
@@ -440,17 +503,20 @@ int main()
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-        // LAVA --------------------------------------------------------------------------------------------------------
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glUseProgram(lava_program.program_id);
-        // set uniforms
-        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, -1, 0, water_h});
-        lava_program.set_mat4("model", model_mat);
-        // Draw
-        lava.draw(lava_program, nullptr);
-        cave_lava.draw(lava_program, nullptr);
-        // -------------------------------------------------------------------------------------------------------------
+        if (level >= LAVA_LEVEL)
+        {
+            // LAVA --------------------------------------------------------------------------------------------------------
+            glEnable(GL_DEPTH_TEST);
+            glEnable(GL_CULL_FACE);
+            glUseProgram(lava_program.program_id);
+            // set uniforms
+            set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, -1, 0, water_h});
+            lava_program.set_mat4("model", model_mat);
+            // Draw
+            lava.draw(lava_program, nullptr);
+            cave_lava.draw(lava_program, nullptr);
+            // -------------------------------------------------------------------------------------------------------------
+        }
 
 
 
@@ -476,88 +542,106 @@ int main()
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
-        // LAVA --------------------------------------------------------------------------------------------------------
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glUseProgram(lava_program.program_id);
-        // set uniforms
-        set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
-        lava_program.set_mat4("model", model_mat);
-        // Draw
-        lava.draw(lava_program, nullptr);
-        cave_lava.draw(lava_program, nullptr);
-        // -------------------------------------------------------------------------------------------------------------
-
-        // LIGHTS -------------------------------------------------------------------------------------------
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glUseProgram(light_program.program_id);
-        // set uniforms
-        set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
-        light_program.set_mat4("model", model_mat);
-        // Draw
-        light_program.set_vec3("light_color", light1.point_light.diffuse);
-        light1.draw(light_program, nullptr);
-        light_program.set_vec3("light_color", light2.point_light.diffuse);
-        light2.draw(light_program, nullptr);
-        // -------------------------------------------------------------------------------------------------------------
-
-        // WATER -------------------------------------------------------------------------------------------------------
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glUseProgram(water_program.program_id);
-        // set uniforms
-        set_uniforms(water_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
-        float slow_time = total_time * 0.007;
-        float wave_speed = (slow_time - static_cast<int>(slow_time));
-        wave_speed = std::max(wave_speed, 1.f - wave_speed) * 2.f;
-        water_program.set_float("wave_speed", wave_speed);
-        water_program.set_mat4("model", model_mat);
-        // Draw
-        other_textures = {reflect_fbo.color_textures[0], refract_fbo.color_textures[0], refract_fbo.depth_texture};
-        water.draw(water_program, &other_textures);
-        // -------------------------------------------------------------------------------------------------------------
-
-        // CUBEMAP -----------------------------------------------------------------------------------------------------
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glUseProgram(cubemap_program.program_id);
-        // set uniforms
-        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
-        view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
-        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
-        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
-        cubemap_program.set_mat4("view", view);
-        cubemap_program.set_mat4("projection", projection);
-        // Draw
-        cubemap.draw(cubemap_program);
-        // -------------------------------------------------------------------------------------------------------------
-
-        // PARTICLES ---------------------------------------------------------------------------------------------------
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glUseProgram(particle_program.program_id);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDepthMask(GL_FALSE);
-        view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
-        window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
-        projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
-        particle_program.set_mat4("view", view);
-        particle_program.set_mat4("projection", projection);
-        if (ice_age)
-            snow_generator.draw(particle_program);
-        else
+        if (level >= LAVA_LEVEL)
         {
-            lava_generator.draw(particle_program);
-            //smoke_generator.draw(particle_program);
-            moth_generator.draw(particle_program);
-            light_moth_generator.draw(particle_program);
+            // LAVA --------------------------------------------------------------------------------------------------------
+            glEnable(GL_DEPTH_TEST);
+            glEnable(GL_CULL_FACE);
+            glUseProgram(lava_program.program_id);
+            // set uniforms
+            set_uniforms(lava_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
+            lava_program.set_mat4("model", model_mat);
+            // Draw
+            lava.draw(lava_program, nullptr);
+            cave_lava.draw(lava_program, nullptr);
+            // -------------------------------------------------------------------------------------------------------------
         }
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDisable(GL_BLEND);
-        glDepthMask(GL_TRUE);
-        // -------------------------------------------------------------------------------------------------------------
+
+        if (level >= LIGHT_LEVEL)
+        {
+            // LIGHTS -------------------------------------------------------------------------------------------
+            glEnable(GL_DEPTH_TEST);
+            glEnable(GL_CULL_FACE);
+            glUseProgram(light_program.program_id);
+            // set uniforms
+            set_uniforms(light_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
+            light_program.set_mat4("model", model_mat);
+            // Draw
+            light_program.set_vec3("light_color", light1.point_light.diffuse);
+            light1.draw(light_program, nullptr);
+            light_program.set_vec3("light_color", light2.point_light.diffuse);
+            light2.draw(light_program, nullptr);
+            // -------------------------------------------------------------------------------------------------------------
+        }
+
+        if (level >= WATER_LEVEL)
+        {
+            // WATER -------------------------------------------------------------------------------------------------------
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
+            glUseProgram(water_program.program_id);
+            // set uniforms
+            set_uniforms(water_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
+            float slow_time = total_time * 0.007;
+            float wave_speed = (slow_time - static_cast<int>(slow_time));
+            wave_speed = std::max(wave_speed, 1.f - wave_speed) * 2.f;
+            water_program.set_float("wave_speed", wave_speed);
+            water_program.set_mat4("model", model_mat);
+            water_program.set_bool("refract_activate", level >= REFRACT_LEVEL);
+            water_program.set_bool("reflect_activate", level >= REFLECT_LEVEL);
+            // Draw
+            other_textures = {reflect_fbo.color_textures[0], refract_fbo.color_textures[0], refract_fbo.depth_texture};
+            water.draw(water_program, &other_textures);
+            // -------------------------------------------------------------------------------------------------------------
+        }
+
+        if (level >= CUBEMAP_LEVEL)
+        {
+            // CUBEMAP -----------------------------------------------------------------------------------------------------
+            glEnable(GL_DEPTH_TEST);
+            glEnable(GL_CULL_FACE);
+            glUseProgram(cubemap_program.program_id);
+            // set uniforms
+            view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+            view = glm::mat4(glm::mat3(view)); // remove translation from the view matrix
+            window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+            projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+            cubemap_program.set_mat4("view", view);
+            cubemap_program.set_mat4("projection", projection);
+            // Draw
+            cubemap.draw(cubemap_program);
+            // -------------------------------------------------------------------------------------------------------------
+        }
+
+        if (level >= PARTICLE_LEVEL)
+        {
+            // PARTICLES ---------------------------------------------------------------------------------------------------
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
+            glUseProgram(particle_program.program_id);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glDepthMask(GL_FALSE);
+            view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
+            window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
+            projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
+            particle_program.set_mat4("view", view);
+            particle_program.set_mat4("projection", projection);
+            if (ice_age)
+                snow_generator.draw(particle_program);
+            else
+            {
+                lava_generator.draw(particle_program);
+                if (level >= SMOKE_LEVEL)
+                    smoke_generator.draw(particle_program);
+                moth_generator.draw(particle_program);
+                light_moth_generator.draw(particle_program);
+            }
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glDisable(GL_BLEND);
+            glDepthMask(GL_TRUE);
+            // -------------------------------------------------------------------------------------------------------------
+        }
 
 
 
@@ -611,6 +695,7 @@ int main()
 
 
 
+
         // =============================================================================================================
         // DRAW TO SCREEN ----------------------------------------------------------------------------------------------
         // =============================================================================================================
@@ -624,6 +709,7 @@ int main()
         set_uniforms(screen_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
         screen_program.set_bool("ice_age", ice_age);
         screen_program.set_float("ice_time", ice_time);
+        screen_program.set_bool("activate", level >= BLOOM_LEVEL);
         // Draw
         if (amount % 2 == 0)
             other_textures = {scene_fbo.color_textures[0], ping_pong2.color_textures[0]};

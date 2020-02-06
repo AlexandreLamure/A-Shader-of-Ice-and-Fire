@@ -61,6 +61,9 @@ uniform sampler2D texture_other0; // Reflection texture
 uniform sampler2D texture_other1; // Refraction texture
 uniform sampler2D texture_other2; // Refraction depth texture
 
+uniform bool reflect_activate;
+uniform bool refract_activate;
+
 uniform float total_time;
 uniform vec3 camera_pos;
 uniform float wave_speed;
@@ -111,6 +114,11 @@ vec4 compute_water_texture(vec3 normal, vec2 distortion, float water_depth, floa
 
     // Combine reflect & refract
     float coef = clamp(fresnel_coef - clamp(ice_state, 0, 0.2), 0, 1); // Increase reflection when Ice Age
+
+    if (!refract_activate)
+        refract = vec4(0);
+    if (!reflect_activate)
+        reflect = vec4(0);
     return mix(reflect, refract, coef);
 }
 

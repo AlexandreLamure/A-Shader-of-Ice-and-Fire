@@ -11,6 +11,7 @@ layout (location = 1) out vec4 BrightColor;
 uniform sampler2D texture_other0; // Bloom FBO
 uniform sampler2D texture_other1; // Blur FBO
 
+uniform bool activate;
 
 uniform float total_time;
 uniform float ice_time;
@@ -22,7 +23,9 @@ void main()
     const float exposure = 1.5;
 
     vec3 hdr_color = texture(texture_other0, fs_in.tex_coords).rgb;
-    vec3 blur_color = texture(texture_other1, fs_in.tex_coords).rgb;
+    vec3 blur_color = vec3(0);
+    if (activate)
+        blur_color = texture(texture_other1, fs_in.tex_coords).rgb;
 
     hdr_color += blur_color;
 
