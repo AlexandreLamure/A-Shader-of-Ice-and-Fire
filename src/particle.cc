@@ -5,7 +5,7 @@
 
 ParticleGenerator::ParticleGenerator(std::vector<glm::vec4>& origins, const std::string& texture_path,
                                      const glm::vec3& randomness, const glm::vec3& velocity, const glm::vec4& color,
-                                     float scale, float death_speed, float fade_speed, float spin_range)
+                                     float scale, float death_speed, float fade_speed, float spin_radius, float spin_height)
 {
     this->origins = origins;
     this->randomness = randomness;
@@ -14,7 +14,8 @@ ParticleGenerator::ParticleGenerator(std::vector<glm::vec4>& origins, const std:
     this->scale = scale;
     this->death_speed = death_speed;
     this->fade_speed = fade_speed;
-    this->spin_range = spin_range;
+    this->spin_radius = spin_radius;
+    this->spin_height = spin_height;
 
     texture_id = Model::texture_from_file(texture_path.c_str(), ".");
 
@@ -74,7 +75,8 @@ void ParticleGenerator::compute(Program program, float delta_time, float total_t
     program.set_vec3("randomness", randomness);
     program.set_vec3("start_velocity", velocity);
     program.set_float("death_speed", death_speed);
-    program.set_float("spin_range", spin_range);
+    program.set_float("spin_radius", spin_radius);
+    program.set_float("spin_height", spin_height);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, origin_buffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, position_buffer);
@@ -120,7 +122,8 @@ ParticleGenerator init_lava_particle_generator(const Model& lava)
                              0.15,                     // scale
                              0.2,                      // death_speed
                              1.5,                      // fade_speed
-                             0.2);                     // spin_range
+                             0.2,                      // spin_radius
+                             3);                       // spin_height
 }
 
 ParticleGenerator init_snow_particle_generator()
@@ -137,8 +140,78 @@ ParticleGenerator init_snow_particle_generator()
                              glm::vec3(10,25,10),      // randomness
                              glm::vec3(0, -2, 0),      // velocity
                              glm::vec4(2, 2, 2, 1),    // color
-                             0.2,                     // scale
-                             0.03,                      // death_speed
-                             2,                      // fade_speed
-                             0.6);                     // spin_range
+                             0.2,                      // scale
+                             0.03,                     // death_speed
+                             2,                        // fade_speed
+                             0.6,                      // spin_radius
+                             3);                       // spin_height
+}
+
+ParticleGenerator init_smoke_particle_generator(std::vector<glm::vec3> lava_nexus)
+{
+    std::vector<glm::vec4> origins;
+    glm::vec3 pos = lava_nexus[0];
+    pos.y += 2;
+    for (int i = 0; i < 2000; ++i)
+        origins.emplace_back(glm::vec4(pos, -1));
+    std::cout << origins.size() << " smoke origins" << std::endl;
+
+    return ParticleGenerator(origins, "../models/particle/smoke.png",
+                             glm::vec3(0.8),           // randomness
+                             glm::vec3(0, 1.2, 0),     // velocity
+                             glm::vec4(1),             // color
+                             3.0,                      // scale
+                             0.05,                     // death_speed
+                             0.5,                      // fade_speed
+                             0.6,                      // spin_radius
+                             9);                       // spin_height
+}
+
+ParticleGenerator init_moth_particle_generator(const Model& water)
+{
+    std::vector<glm::vec4> origins;
+    for (const Mesh& mesh : water.meshes)
+    {
+        for (int i = 0; i < mesh.vertices.size(); i++)
+        {
+            glm::vec3 pos = mesh.vertices[i].position;
+            pos.y += 1;
+            for (int j = 0; j < 1; ++j)
+                origins.emplace_back(glm::vec4(pos, -1));
+        }
+    }
+    std::cout << origins.size() << " moth origins" << std::endl;
+
+    return ParticleGenerator(origins, "../models/particle/moth.png",
+                             glm::vec3(5, 1, 5),       // randomness
+                             glm::vec3(0, 0, 0),       // velocity
+                             glm::vec4(10, 11, 10, 1), // color
+                             0.15,                     // scale
+                             0.01,                     // death_speed
+                             0.1,                      // fade_speed
+                             1.2,                      // spin_radius
+                             10);                      // spin_height
+}
+
+ParticleGenerator init_light_moth_particle_generator(const std::vector<LightModel>& light_models)
+{
+    std::vector<glm::vec4> origins;
+    for (const LightModel& light_model : light_models)
+    {
+        glm::vec3 pos = light_model.point_light.pos;
+        pos.y -= 0.2;
+        for (int i = 0; i < 40; i++)
+            origins.emplace_back(glm::vec4(pos, -1));
+    }
+    std::cout << origins.size() << " light moth origins" << std::endl;
+
+    return ParticleGenerator(origins, "../models/particle/moth.png",
+                             glm::vec3(1, 1.5, 1),     // randomness
+                             glm::vec3(0, 0.01, 0),    // velocity
+                             glm::vec4(10, 11, 10, 1), // color
+                             0.1,                      // scale
+                             0.01,                     // death_speed
+                             0.1,                      // fade_speed
+                             0.2,                      // spin_radius
+                             3);                       // spin_height
 }

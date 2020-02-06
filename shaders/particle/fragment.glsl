@@ -15,5 +15,5 @@ uniform vec4 color;
 void main()
 {
     output_color = color * texture(sprite, fs_in.tex_coords);
-    output_color.a = clamp(fs_in.life * fade_speed, 0, 1);
+    output_color.a *= clamp(fs_in.life * fade_speed, 0, 1);
 }

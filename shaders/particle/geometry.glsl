@@ -30,11 +30,11 @@ void set_out(vec2 quad_pos, vec2 tex_coords)
     // always face the camera
     vec3 camera_right = vec3(view[0][0], view[1][0], view[2][0]);
     vec3 camera_up = vec3(view[0][1], view[1][1], view[2][1]);
-    // FIXME : change the scale with a little random
 
+    float new_scale = scale * (clamp(gs_in[0].life, 0, 1) * 0.2 + 0.8); // reduce size as life decrease
     vec3 new_pos = gs_in[0].pos;
-    new_pos += camera_right * quad_pos.x * scale;
-    new_pos += camera_up * quad_pos.y * scale;
+    new_pos += camera_right * quad_pos.x * new_scale;
+    new_pos += camera_up * quad_pos.y * new_scale;
     gl_Position = projection * view * vec4(new_pos, 1);
 }
 

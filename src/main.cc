@@ -263,6 +263,9 @@ int main()
 
     ParticleGenerator lava_generator = init_lava_particle_generator(lava_skeleton);
     ParticleGenerator snow_generator = init_snow_particle_generator();
+    ParticleGenerator smoke_generator = init_smoke_particle_generator(Utils::lava_nexus);
+    ParticleGenerator moth_generator = init_moth_particle_generator(water);
+    ParticleGenerator light_moth_generator = init_light_moth_particle_generator(light_models);
 
     // SOUND
     sound.init_lava_sound(sound_engine, 0.9, Utils::lava_nexus);
@@ -308,7 +311,11 @@ int main()
         else
         {
             glUseProgram(compute_program.program_id);
+            compute_program.set_float("water_h", water_h);
             lava_generator.compute(compute_program, delta_time, total_time);
+            //smoke_generator.compute(compute_program, delta_time, total_time);
+            moth_generator.compute(compute_program, delta_time, total_time);
+            light_moth_generator.compute(compute_program, delta_time, total_time);
             glUseProgram(0);
         }
 
@@ -383,7 +390,9 @@ int main()
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glUseProgram(particle_program.program_id);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthMask(GL_FALSE);
         view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
         window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
         projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
@@ -392,9 +401,15 @@ int main()
         if (ice_age)
             snow_generator.draw(particle_program);
         else
+        {
             lava_generator.draw(particle_program);
-
+            //smoke_generator.draw(particle_program);
+            moth_generator.draw(particle_program);
+            light_moth_generator.draw(particle_program);
+        }
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_BLEND);
+        glDepthMask(GL_TRUE);
         // -------------------------------------------------------------------------------------------------------------
 
         // reset camera
@@ -522,7 +537,9 @@ int main()
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
         glUseProgram(particle_program.program_id);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthMask(GL_FALSE);
         view = glm::lookAt(camera.pos, camera.pos + camera.front, camera.up);
         window_ratio = window_w > window_h ? (float)window_w/(float)window_h : (float)window_h/(float)window_w;
         projection = glm::perspective(glm::radians(camera.fov), window_ratio, 0.1f, 1000.0f);
@@ -531,9 +548,15 @@ int main()
         if (ice_age)
             snow_generator.draw(particle_program);
         else
+        {
             lava_generator.draw(particle_program);
-
+            //smoke_generator.draw(particle_program);
+            moth_generator.draw(particle_program);
+            light_moth_generator.draw(particle_program);
+        }
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_BLEND);
+        glDepthMask(GL_TRUE);
         // -------------------------------------------------------------------------------------------------------------
 
 

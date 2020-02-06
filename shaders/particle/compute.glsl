@@ -30,7 +30,8 @@ uniform float total_time;
 uniform vec3 randomness;
 uniform vec3 start_velocity;
 uniform float death_speed;
-uniform float spin_range;
+uniform float spin_radius;
+uniform float spin_height;
 
 uniform float water_h;
 
@@ -46,8 +47,8 @@ void main(void)
 
     life -= delta_time * death_speed;
 
-    vel.x = cos(total_time / 3 + index / 3.14) * spin_range;
-    vel.z = sin(total_time / 3 + index / 2) * spin_range;
+    vel.x = cos(total_time / spin_height + index / 3.14) * spin_radius;
+    vel.z = sin(total_time / spin_height + index / 2) * spin_radius;
     pos += vel * delta_time;
 
     // Remove particles under water
