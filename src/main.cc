@@ -260,17 +260,23 @@ int main()
 
     Model screen("../models/screen/screen.obj", GL_TRIANGLES);
     Model water("../models/water/waterLOD0.obj", GL_PATCHES);
-    Model volcano("../models/volcan/volcan.obj", GL_TRIANGLES);
+    Model volcano("../models/volcan_soutenance/VolcanSoutenance.obj", GL_TRIANGLES);
+    Model gate("../models/gate/GateSoutenance.obj", GL_TRIANGLES);
     Model lava("../models/lava/lava.obj", GL_PATCHES);
     Model lava_skeleton("../models/lava/lava_skeleton.obj", GL_TRIANGLES);
     Model cave_lava("../models/cave_lava/cave_lava.obj", GL_PATCHES);
     Model lamp1("../models/lamps/lamp1/lamp.obj", GL_TRIANGLES);
-    Model lamp2("../models/lamps/lamp2/lamp.obj", GL_TRIANGLES);
+    Model lamp2("../models/lamps/lamp3/lamp.obj", GL_TRIANGLES);
     LightModel light1("../models/lamps/lamp1/light.obj", GL_TRIANGLES, light_color1);
-    LightModel light2("../models/lamps/lamp2/light.obj", GL_TRIANGLES, light_color2);
+    LightModel light2("../models/lamps/lamp3/light.obj", GL_TRIANGLES, light_color2);
+    LightModel light3("../models/gate/light1.obj", GL_TRIANGLES, light_color1);
+    LightModel light4("../models/gate/light2.obj", GL_TRIANGLES, light_color2);
+
 
     light_models.push_back(light1);
     light_models.push_back(light2);
+    light_models.push_back(light3);
+    light_models.push_back(light4);
 
     Cubemap cubemap = Cubemap();
 
@@ -394,6 +400,7 @@ int main()
         volcano.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
+        gate.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
 
         if (level >= LAVA_LEVEL)
@@ -425,6 +432,10 @@ int main()
             light1.draw(light_program, nullptr);
             light_program.set_vec3("light_color", light2.point_light.diffuse);
             light2.draw(light_program, nullptr);
+            light_program.set_vec3("light_color", light3.point_light.diffuse);
+            light3.draw(light_program, nullptr);
+            light_program.set_vec3("light_color", light4.point_light.diffuse);
+            light4.draw(light_program, nullptr);
             // -------------------------------------------------------------------------------------------------------------
         }
 
@@ -499,6 +510,7 @@ int main()
         volcano_program.set_float("ice_time", ice_time);
         // Draw
         volcano.draw(volcano_program, nullptr);
+        gate.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
@@ -538,6 +550,7 @@ int main()
         volcano_program.set_float("ice_time", ice_time);
         // Draw
         volcano.draw(volcano_program, nullptr);
+        gate.draw(volcano_program, nullptr);
         lamp1.draw(volcano_program, nullptr);
         lamp2.draw(volcano_program, nullptr);
         // -------------------------------------------------------------------------------------------------------------
@@ -571,6 +584,10 @@ int main()
             light1.draw(light_program, nullptr);
             light_program.set_vec3("light_color", light2.point_light.diffuse);
             light2.draw(light_program, nullptr);
+            light_program.set_vec3("light_color", light3.point_light.diffuse);
+            light3.draw(light_program, nullptr);
+            light_program.set_vec3("light_color", light4.point_light.diffuse);
+            light4.draw(light_program, nullptr);
             // -------------------------------------------------------------------------------------------------------------
         }
 
