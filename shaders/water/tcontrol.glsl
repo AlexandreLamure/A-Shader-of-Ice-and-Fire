@@ -27,11 +27,11 @@ void main(void)
 {
     if (ID == 0)
     {
-        gl_TessLevelInner[0] = 6;// horizontal
+        gl_TessLevelInner[0] = 1;// horizontal
 
-        gl_TessLevelOuter[0] = 6;// edge 0-3
-        gl_TessLevelOuter[1] = 6;// edge 2-3
-        gl_TessLevelOuter[2] = 6;// edge 1-2
+        gl_TessLevelOuter[0] = 1;// edge 0-3
+        gl_TessLevelOuter[1] = 1;// edge 2-3
+        gl_TessLevelOuter[2] = 1;// edge 1-2
     }
 
     gl_out[ID].gl_Position = gl_in[ID].gl_Position;

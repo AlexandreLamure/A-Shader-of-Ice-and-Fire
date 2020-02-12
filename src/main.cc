@@ -223,7 +223,6 @@ int main()
 
     // water constant
     constexpr float water_h = 7.0f; // FIXME: get this from obj
-    constexpr glm::vec3 water_limits = glm::vec3(22.5, water_h, 19);
 
     // time variables
     float total_time = 0.f;
@@ -255,11 +254,10 @@ int main()
 
     std::vector<LightModel> light_models;
 
-    Light light_color1 = Light({0.1f, 0.1f, 0.1f}, {15.0f, 1.0f, 1.0f},  {15.0f, 1.0f, 1.0f});
-    Light light_color2 = Light({0.1f, 0.1f, 0.1f}, {15.0f, 1.0f, 1.0f}, {15.0f, 1.0f, 1.0f});
+    Light light_color1 = Light({0.4f, 0.4f, 0.4f}, {15.0f, 1.0f, 1.0f},  {15.0f, 1.0f, 1.0f});
 
     Model screen("../models/screen/screen.obj", GL_TRIANGLES);
-    Model water("../models/water/waterLOD0.obj", GL_PATCHES);
+    Model water("../models/water/water2.obj", GL_PATCHES);
     Model volcano("../models/volcan_soutenance/VolcanSoutenance.obj", GL_TRIANGLES);
     Model gate("../models/gate/GateSoutenance.obj", GL_TRIANGLES);
     Model lava("../models/lava/lava.obj", GL_PATCHES);
@@ -268,9 +266,9 @@ int main()
     Model lamp1("../models/lamps/lamp1/lamp.obj", GL_TRIANGLES);
     Model lamp2("../models/lamps/lamp3/lamp.obj", GL_TRIANGLES);
     LightModel light1("../models/lamps/lamp1/light.obj", GL_TRIANGLES, light_color1);
-    LightModel light2("../models/lamps/lamp3/light.obj", GL_TRIANGLES, light_color2);
+    LightModel light2("../models/lamps/lamp3/light.obj", GL_TRIANGLES, light_color1);
     LightModel light3("../models/gate/light1.obj", GL_TRIANGLES, light_color1);
-    LightModel light4("../models/gate/light2.obj", GL_TRIANGLES, light_color2);
+    LightModel light4("../models/gate/light2.obj", GL_TRIANGLES, light_color1);
 
 
     light_models.push_back(light1);
@@ -394,7 +392,7 @@ int main()
         // set uniforms
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, 1, 0, -water_h+0.5});
         volcano_program.set_mat4("model", model_mat);
-        volcano_program.set_vec3("water_limits", water_limits);
+        volcano_program.set_float("water_h", water_h);
         volcano_program.set_float("ice_time", ice_time);
         // Draw
         volcano.draw(volcano_program, nullptr);
@@ -506,7 +504,7 @@ int main()
         // set uniforms
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0, -1, 0, water_h+1});
         volcano_program.set_mat4("model", model_mat);
-        volcano_program.set_vec3("water_limits", water_limits);
+        volcano_program.set_float("water_h", water_h);
         volcano_program.set_float("ice_time", ice_time);
         // Draw
         volcano.draw(volcano_program, nullptr);
@@ -546,7 +544,7 @@ int main()
         // set uniforms
         set_uniforms(volcano_program, window_w, window_h, total_time, delta_time, dir_lights, point_lights, light_models, {0,0,0,0});
         volcano_program.set_mat4("model", model_mat);
-        volcano_program.set_vec3("water_limits", water_limits);
+        volcano_program.set_float("water_h", water_h);
         volcano_program.set_float("ice_time", ice_time);
         // Draw
         volcano.draw(volcano_program, nullptr);

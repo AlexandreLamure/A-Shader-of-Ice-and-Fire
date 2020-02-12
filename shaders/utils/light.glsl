@@ -33,7 +33,7 @@ struct PointLight
 
 
 #define NB_DIR_LIGHTS 2
-#define NB_LIGHT_MODELS 2
+#define NB_LIGHT_MODELS 4
 #define NB_POINT_LIGHTS 10
 
 uniform DirLight dir_lights[NB_DIR_LIGHTS];

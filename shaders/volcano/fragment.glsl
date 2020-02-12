@@ -45,7 +45,7 @@ out vec4 output_color;
 
 
 #define NB_DIR_LIGHTS 2
-#define NB_LIGHT_MODELS 2
+#define NB_LIGHT_MODELS 4
 #define NB_POINT_LIGHTS 10
 
 uniform DirLight dir_lights[NB_DIR_LIGHTS];
@@ -59,8 +59,8 @@ uniform sampler2D texture_normal1;
 
 uniform float total_time;
 uniform vec3 camera_pos;
-uniform vec3 water_limits;
 uniform float ice_time;
+uniform float water_h;
 
 float get_ice_state(vec4 position);
 float get_ice_wave(float ice_state);
@@ -111,10 +111,10 @@ void main()
 
     vec3 snow = compute_snow();
     // Decrease snow under water
-    snow *= clamp(fs_in.pos.y - water_limits.y+0.2, 0, 1);
+    snow *= clamp(fs_in.pos.y - water_h+0.2, 0, 1);
     output_color.rgb += snow;
 
     // Decrease light under water
-    if (fs_in.pos.y < water_limits.y && !(fs_in.pos.z < water_limits.z && fs_in.pos.x > water_limits.x))
-        output_color.rgb = mix(output_color.rgb, output_color.rgb * vec3(0.4, 0.42, 0.7), min(water_limits.y+0.1 - fs_in.pos.y, 1));
+    if (fs_in.pos.y < water_h)
+        output_color.rgb = mix(output_color.rgb, output_color.rgb * vec3(0.4, 0.42, 0.7), min(water_h+0.1 - fs_in.pos.y, 1));
 }

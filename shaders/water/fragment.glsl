@@ -45,7 +45,7 @@ out vec4 output_color;
 
 
 #define NB_DIR_LIGHTS 2
-#define NB_LIGHT_MODELS 2
+#define NB_LIGHT_MODELS 4
 #define NB_POINT_LIGHTS 10
 
 uniform DirLight dir_lights[NB_DIR_LIGHTS];
@@ -110,7 +110,7 @@ vec4 compute_water_texture(vec3 normal, vec2 distortion, float water_depth, floa
     // Fresnel
     vec3 camera_dir = normalize(camera_pos - fs_in.pos.xyz);
     float fresnel_coef = dot(camera_dir, normal);
-    fresnel_coef = pow(fresnel_coef, 1.8);
+    fresnel_coef = pow(fresnel_coef, 0.8);
 
     // Combine reflect & refract
     float coef = clamp(fresnel_coef - clamp(ice_state, 0, 0.2), 0, 1); // Increase reflection when Ice Age
