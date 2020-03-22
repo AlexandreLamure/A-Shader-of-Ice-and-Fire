@@ -2,7 +2,6 @@
 The goal of this project is to create dynamic water, ice, lava and fire in OpenGL 4.
 
 
-
 ## Build and run
 ```shell=sh
 # Install irrKlang (needed for audio)
@@ -40,6 +39,11 @@ cmake --build . --config Release -j
     https://www.ambiera.com/irrklang
 
 ## Results
+
+### The scene
+We decided to create our own scene on MagicaVoxel to be as free as possible.
+However, we decided to keep the models simple, so that our work on the lava and ice would be more visible. 
+
 ### Fire mode
 - The water computes its __refraction__ and __reflection__. The distortion effect is made using a __displacement map__. It also uses the __tesselation__ and __geometry__ shaders to create a tiny wave effect (changin the height locally).
 - The lava texture is made using __Perlin noise__. It also uses the tesselation and geometry shaders.
