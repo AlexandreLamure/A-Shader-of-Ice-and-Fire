@@ -18,8 +18,9 @@ cmake --build . --config Release -j
 
 
 ## Structure
+* `audio/`: sound files
 * `lib/`: external libraries
-* `resources/`: `OBJ` models
+* `models/`: `OBJ` models
 * `shaders/`: `GLSL` source code
 * `src/`:`C++` source code and headers
 
