@@ -38,6 +38,17 @@ cmake --build . --config Release -j
     https://github.com/nothings/stb
 * irrKlang (Sound):
     https://www.ambiera.com/irrklang
+    
+## Features
+- [x] Bloom + HDR
+- [x] Lava procedural texture (Perlin customised)
+- [x] Particles (compute shader)
+- [x] Water reflection + refraction
+- [x] Water displacement mapping + tesselation
+- [x] Transition FX (Screen-Space animation)
+- [x] Snow (Perlin noise on 3 octaves)
+- [x] Ice
+- [x] Sound FX
 
 ## Results
 
